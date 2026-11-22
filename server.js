@@ -1,7 +1,9 @@
 /* ============================================================
  * 造梦空间站 · 商业级后端  server.js
- * 架构：Express + JSON文件数据库 + 全局互斥锁（行锁等价物）
- * 卡密：独立文件 cards_db.json，启动时只增补、绝不覆盖已核销记录
+ * 架构：Express + JSON文件数据库（users_db.json / cards_db.json）
+ *      + 全局互斥锁（行锁等价物）+ 登录令牌（token → uid）
+ * 安全：密码加盐哈希存储（crypto.scrypt）；严禁明文
+ *       所有余额变动在锁内完成，先校验后扣减，不可能负数
  * ============================================================ */
 const express = require("express");
 const fs = require("fs");
@@ -18,7 +20,7 @@ const AI_API_KEY  = process.env.AI_API_KEY  || "";
 const AI_BASE     = process.env.AI_BASE_URL || "https://api.openai.com/v1";
 const AI_MODEL    = process.env.AI_MODEL    || "gpt-4o-mini";
 
-/* ---------- 档位表 ---------- */
+/* ---------- AI 档位表 ---------- */
 const TIERS = {
   basic:  { cost: 5,  env: "MODEL_BASIC",  maxTokens: 1200, sys: "代码必须控制在40行以内，仅核心逻辑。" },
   gpt4:   { cost: 10, env: "MODEL_GPT4",   maxTokens: 2500, sys: "" },
@@ -28,40 +30,58 @@ const TIERS = {
 };
 const tierModel = id => process.env[TIERS[id].env] || AI_MODEL;
 const EXTRA_CHARS = 500, EXTRA_COST = 5;
+const WELCOME_POINTS = 100, WELCOME_COINS = 50;   // 新用户注册赠送
 
 /* ============================================================
- * 一、主数据库层（db.json + Mutex）
+ * 一、JSON 文件持久化工具（防抖落盘）
  * ============================================================ */
-const DB_FILE = path.join(__dirname, "db.json");
-let db = { users: {}, transactions: [], platform: { dreamCoins: 0 } };
-if (fs.existsSync(DB_FILE)) { try { db = JSON.parse(fs.readFileSync(DB_FILE, "utf8")); } catch (e) {} }
-// 兼容旧版 db.json 中的 coupons 字段（迁移到 cards_db，见下）
-if (db.coupons) { db._legacyCoupons = db.coupons; delete db.coupons; }
-let saving = false;
-const saveDB = () => {
-  if (saving) return; saving = true;
-  setTimeout(() => fs.writeFile(DB_FILE, JSON.stringify(db), () => { saving = false; }), 200);
+const loadJSON = (file, def) => {
+  if (!fs.existsSync(file)) return def;
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) { return def; }
+};
+const makeSaver = file => {
+  let pending = false;
+  return data => {
+    if (pending) return; pending = true;
+    setTimeout(() => fs.writeFile(file, JSON.stringify(data), () => { pending = false; }), 200);
+  };
 };
 
-let lock = Promise.resolve();
-const withLock = fn => { const r = lock.then(fn); lock = r.catch(() => {}); return r; };
+/* ---------- 用户库 users_db.json（重启不丢、不覆盖） ---------- */
+const USERS_FILE = path.join(__dirname, "users_db.json");
+let users = loadJSON(USERS_FILE, { byUid: {}, byName: {} }); // 双索引：uid → 用户；小写账号 → uid
+const saveUsers = () => makeSaver(USERS_FILE)(users);
 
-const getUser = uid => db.users[uid] || (db.users[uid] = {
-  uid, points: 100, dreamCoins: 50, vipType: 0, vipExpireTime: 0,
-  lastCheckin: "", name: "Play 1", createdAt: Date.now()
-});
-const vipSweep = u => { if (u.vipType && u.vipExpireTime < Date.now()) u.vipType = 0; };
+/* ---------- 流水库 db.json ---------- */
+const DB_FILE = path.join(__dirname, "db.json");
+let db = loadJSON(DB_FILE, { transactions: [], platform: { dreamCoins: 0 } });
+const saveDB = () => makeSaver(DB_FILE)(db);
 const log = (uid, kind, delta, cur, note) =>
   db.transactions.unshift({ uid, kind, delta, cur, note, time: Date.now() });
 
-/* ============================================================
- * 二、卡密数据库层（cards_db.json 独立持久化）
- * 规则：启动时读取现有文件 → 把预置序列号中"尚不存在"的补进去
- *       → 已存在/已核销记录原样保留，绝不覆盖
- * ============================================================ */
-const CARDS_FILE = path.join(__dirname, "cards_db.json");
+/* ---------- 旧版兼容：把 db.json 里的游客数据迁移为系统用户 ---------- */
+if (db.users && !users._migrated) {
+  for (const [ouid, ou] of Object.entries(db.users)) {
+    if (!users.byUid[ouid]) {
+      users.byUid[ouid] = {
+        uid: ouid, username: "", passwordHash: "", nickname: "游客_" + ouid.slice(-4),
+        points: ou.points ?? 0, dreamCoins: ou.dreamCoins ?? 0,
+        vipType: ou.vipType === 1 ? "VIPZM" : ou.vipType === 2 ? "VIPJF" : "none",
+        vipExpireAt: ou.vipExpireTime || 0, strikeCount: 0, banned: false,
+        lastCheckin: ou.lastCheckin || "", createdAt: ou.createdAt || Date.now(), guest: true,
+      };
+    }
+  }
+  users._migrated = true; delete db.users; saveUsers(); saveDB();
+  console.log("🔄 已迁移旧版游客数据到新用户库");
+}
 
-/* ---- 125 个预置序列号（5档 × 25个）---- */
+/* ---------- 卡密库 cards_db.json ---------- */
+const CARDS_FILE = path.join(__dirname, "cards_db.json");
+let cards = loadJSON(CARDS_FILE, {});
+const saveCards = () => makeSaver(CARDS_FILE)(cards);
+
+/* ---- 125 个预置序列号 ---- */
 const SEED_CODES = {
   JF100: `ZMKJZ-JF100-8K9M-2P4X ZMKJZ-JF100-7H3N-9W6L ZMKJZ-JF100-4R8V-5Q2T ZMKJZ-JF100-9D2B-6Y7J ZMKJZ-JF100-3F6C-8M1Z ZMKJZ-JF100-5G9H-4K8P ZMKJZ-JF100-2L7W-3N5R ZMKJZ-JF100-6T4Q-9X2V ZMKJZ-JF100-8Y1J-7B4D ZMKJZ-JF100-1M5Z-2C8F ZMKJZ-JF100-9P3K-5H7G ZMKJZ-JF100-4W8N-6R2L ZMKJZ-JF100-7Q2X-8V9T ZMKJZ-JF100-3B6D-4J1Y ZMKJZ-JF100-5C9F-2Z7M ZMKJZ-JF100-2H4G-9K3P ZMKJZ-JF100-8N7L-1R6W ZMKJZ-JF100-6X2T-4Q8V ZMKJZ-JF100-9J5Y-7D3B ZMKJZ-JF100-1Z8M-5F2C ZMKJZ-JF100-4K3P-8G6H ZMKJZ-JF100-7R9W-2L4N ZMKJZ-JF100-3V2Q-6T9X ZMKJZ-JF100-5D7B-1Y8J ZMKJZ-JF100-8F4C-9M2Z`,
   JF500: `ZMKJZ-JF500-3P9K-7M2X ZMKJZ-JF500-8W4L-2H6N ZMKJZ-JF500-5Q2T-9R8V ZMKJZ-JF500-2Y7J-4D3B ZMKJZ-JF500-9M1Z-6F8C ZMKJZ-JF500-4K8P-1G5H ZMKJZ-JF500-7N5R-8L2W ZMKJZ-JF500-1X2V-3T6Q ZMKJZ-JF500-6B4D-9Y7J ZMKJZ-JF500-3C8F-2M5Z ZMKJZ-JF500-8H7G-4P9K ZMKJZ-JF500-5R2L-7W3N ZMKJZ-JF500-2V9T-6Q1X ZMKJZ-JF500-9J1Y-8B4D ZMKJZ-JF500-4Z7M-3C2F ZMKJZ-JF500-7G3P-5H8K ZMKJZ-JF500-1L6W-9N2R ZMKJZ-JF500-6Q8V-4X5T ZMKJZ-JF500-3D3B-7J9Y ZMKJZ-JF500-8F2C-1Z6M ZMKJZ-JF500-5P6H-2K4G ZMKJZ-JF500-2W4N-8R7L ZMKJZ-JF500-9T9X-3V1Q ZMKJZ-JF500-4Y8J-6D5B ZMKJZ-JF500-7M2Z-9F3C`,
@@ -70,84 +90,176 @@ const SEED_CODES = {
   ZM1K: `ZMKJZ-ZM1K-7P4K-2M9X ZMKJZ-ZM1K-3L8W-6H1N ZMKJZ-ZM1K-8T2Q-5R7V ZMKJZ-ZM1K-4J9Y-1D6B ZMKJZ-ZM1K-9C5F-8Z3M ZMKJZ-ZM1K-2K1P-4G7H ZMKJZ-ZM1K-6R7N-9L2W ZMKJZ-ZM1K-1V3X-3Q8T ZMKJZ-ZM1K-5D6B-7J4Y ZMKJZ-ZM1K-8Z2M-2F9C ZMKJZ-ZM1K-3H8G-5P1K ZMKJZ-ZM1K-7W4L-1R6N ZMKJZ-ZM1K-2Q9V-8T3X ZMKJZ-ZM1K-6Y1J-4B5D ZMKJZ-ZM1K-9M7Z-6C2F ZMKJZ-ZM1K-4G3P-9H8K ZMKJZ-ZM1K-8N5R-2W4L ZMKJZ-ZM1K-3X6T-7V1Q ZMKJZ-ZM1K-7B2D-3Y9J ZMKJZ-ZM1K-1F8C-5M6Z ZMKJZ-ZM1K-5K4H-8G2P ZMKJZ-ZM1K-9L9W-4N7R ZMKJZ-ZM1K-4T1Q-6X3V ZMKJZ-ZM1K-8J5Y-2D8B ZMKJZ-ZM1K-2C7M-9F4C`,
 };
 
-/* ---- 5 档位核销规则：返回发放文案 ---- */
+/* ---- 卡密发放规则 ---- */
 const CARD_RULES = {
-  JF100: u => { u.points += 100;                    return "到账 +100 积分"; },
-  JF500: u => { u.points += 500;                    return "到账 +500 积分"; },
-  ZM1K:  u => { u.dreamCoins += 1000;               return "到账 +1,000 造梦币"; },
-  VIPJF: u => { u.vipType = 2;                       // 积分大会员30天 +6000分
-                u.vipExpireTime = Math.max(Date.now(), u.vipExpireTime) + 30 * 864e5;
-                u.points += 6000;                   return "积分大会员30天激活 +6,000 积分"; },
-  VIPZM: u => { u.vipType = 1;                       // 站点大会员30天 +10000币
-                u.vipExpireTime = Math.max(Date.now(), u.vipExpireTime) + 30 * 864e5;
-                u.dreamCoins += 10000;              return "站点大会员30天激活 +10,000 造梦币"; },
+  JF100: u => { u.points += 100;    return "到账 +100 积分"; },
+  JF500: u => { u.points += 500;    return "到账 +500 积分"; },
+  ZM1K:  u => { u.dreamCoins += 1000; return "到账 +1,000 造梦币"; },
+  VIPJF: u => { u.vipType = "VIPJF"; u.vipExpireAt = Math.max(Date.now(), u.vipExpireAt || 0) + 30 * 864e5; u.points += 6000; return "积分大会员30天激活 +6,000 积分"; },
+  VIPZM: u => { u.vipType = "VIPZM"; u.vipExpireAt = Math.max(Date.now(), u.vipExpireAt || 0) + 30 * 864e5; u.dreamCoins += 10000; return "站点大会员30天激活 +10,000 造梦币"; },
 };
-
-/* ---- 卡密库加载：读取现存文件，仅"补种"缺失卡，不动已核销记录 ---- */
-let cards = {};
-if (fs.existsSync(CARDS_FILE)) {
-  try { cards = JSON.parse(fs.readFileSync(CARDS_FILE, "utf8")); } catch (e) { cards = {}; }
-}
-// 迁移旧版 coupons（若存在）为卡密记录
-if (db._legacyCoupons) {
-  for (const [code, c] of Object.entries(db._legacyCoupons)) {
-    if (!cards[code]) cards[code] = { code, tier: "LEGACY", type: c.type, amount: c.amount,
-      used: !!c.isUsed, usedBy: c.usedBy || null, usedAt: null };
-  }
-  delete db._legacyCoupons;
-}
-let seeded = 0;
-for (const [tier, list] of Object.entries(SEED_CODES)) {
-  for (const code of list.trim().split(/\s+/)) {
-    if (!cards[code]) { cards[code] = { code, tier, used: false, usedBy: null, usedAt: null }; seeded++; }
-  }
-}
-let cardsSaving = false;
-const saveCards = () => {
-  if (cardsSaving) return; cardsSaving = true;
-  setTimeout(() => fs.writeFile(CARDS_FILE, JSON.stringify(cards), () => { cardsSaving = false; }), 200);
-};
-saveCards();
-if (seeded) console.log(`🎫 卡密库：补入 ${seeded} 个预置序列号，当前共 ${Object.keys(cards).length} 个`);
-
-/* 管理员批量生成的动态卡密同样落入卡密库 */
-const GEN_TYPES = { // 与旧版一致：动态生成的额外卡密（预置之外可继续加库存）
+const GEN_TYPES = {
   points: { tier: "GENPT", apply: (u, a) => { u.points += a; return `到账 +${a} 积分`; } },
   coins:  { tier: "GENCN", apply: (u, a) => { u.dreamCoins += a; return `到账 +${a} 造梦币`; } },
   vip_site_month: { tier: "VIPZM", apply: CARD_RULES.VIPZM },
   vip_pts_month:  { tier: "VIPJF", apply: CARD_RULES.VIPJF },
-  vip_pts_year:   { tier: "GENPY", apply: u => { u.vipType = 2;
-                u.vipExpireTime = Math.max(Date.now(), u.vipExpireTime) + 365 * 864e5;
-                u.points += 12000; return "积分大会员365天激活 +12,000 积分"; } },
+  vip_pts_year:   { tier: "GENPY", apply: u => { u.vipType = "VIPJF"; u.vipExpireAt = Math.max(Date.now(), u.vipExpireAt || 0) + 365 * 864e5; u.points += 12000; return "积分大会员365天激活 +12,000 积分"; } },
 };
-const rand6 = () => crypto.randomBytes(3).toString("hex").toUpperCase();
 
-/* 兑换防爆破：连续错5次封禁1小时 */
-const failMap = {};
-const checkBan = uid => { const f = failMap[uid]; return f && f.banUntil > Date.now() ? Math.ceil((f.banUntil - Date.now()) / 6e4) : 0; };
-const markFail = uid => { const f = failMap[uid] || { n: 0, banUntil: 0 }; f.n++; if (f.n >= 5) { f.banUntil = Date.now() + 36e5; f.n = 0; } failMap[uid] = f; };
-const clearFail = uid => { delete failMap[uid]; };
-
-const uidOf = req => String(req.headers["x-uid"] || req.body?.uid || "").slice(0, 40) || null;
+/* ---- 补种预置卡（不覆盖已核销） ---- */
+let seeded = 0;
+for (const [tier, list] of Object.entries(SEED_CODES))
+  for (const code of list.trim().split(/\s+/))
+    if (!cards[code]) { cards[code] = { code, tier, used: false, usedBy: null, usedAt: null }; seeded++; }
+saveCards();
+if (seeded) console.log(`🎫 卡密库：补入 ${seeded} 个，共 ${Object.keys(cards).length} 个`);
 
 /* ============================================================
- * 三、API 路由
+ * 二、互斥锁 + 用户工具
+ * ============================================================ */
+let lock = Promise.resolve();
+const withLock = fn => { const r = lock.then(fn); lock = r.catch(() => {}); return r; };
+
+/* 会员过期清扫：vipType → none */
+const vipSweep = u => { if (u.vipType && u.vipType !== "none" && (u.vipExpireAt || 0) < Date.now()) u.vipType = "none"; };
+
+/* ---------- 密码：salt + scrypt 哈希 ---------- */
+const hashPwd = (pwd, salt) => {
+  salt = salt || crypto.randomBytes(16).toString("hex");
+  const h = crypto.scryptSync(pwd, salt, 64).toString("hex");
+  return salt + ":" + h;
+};
+const verifyPwd = (pwd, stored) => {
+  const [salt, h] = String(stored || "").split(":");
+  if (!salt || !h) return false;
+  const chk = crypto.scryptSync(pwd, salt, 64);
+  const ref = Buffer.from(h, "hex");
+  return chk.length === ref.length && crypto.timingSafeEqual(chk, ref); // 防时序攻击
+};
+
+/* ---------- 登录令牌（内存态，重启后需重新登录；凭据本身可恢复） ---------- */
+const tokens = {}; // token → uid
+const newToken = uid => { const t = "tk_" + crypto.randomBytes(24).toString("hex"); tokens[t] = uid; return t; };
+
+/* 取登录用户：优先 token，其次 x-uid（游客/旧接口兼容） */
+const authUser = req => {
+  const tk = String(req.headers["x-token"] || "");
+  const uid = tokens[tk] || String(req.headers["x-uid"] || req.body?.uid || "").slice(0, 40);
+  if (!uid) return null;
+  return users.byUid[uid] || null;
+};
+const pubUser = u => ({ uid: u.uid, username: u.username, nickname: u.nickname,
+  points: u.points, dreamCoins: u.dreamCoins, vipType: u.vipType, vipExpireAt: u.vipExpireAt,
+  strikeCount: u.strikeCount, banned: !!u.banned, lastCheckin: u.lastCheckin });
+
+/* 防爆破：登录/兑换共用计数器 */
+const failMap = {};
+const banLeft = (key, ms) => { const f = failMap[key]; return f && f.banUntil > Date.now() ? Math.ceil((f.banUntil - Date.now()) / ms) : 0; };
+const markFail = (key, max, banMs) => { const f = failMap[key] || { n: 0, banUntil: 0 }; f.n++; if (f.n >= max) { f.banUntil = Date.now() + banMs; f.n = 0; } failMap[key] = f; };
+const clearFail = key => { delete failMap[key]; };
+const rand6 = () => crypto.randomBytes(3).toString("hex").toUpperCase();
+
+/* ============================================================
+ * 三、认证接口
+ * ============================================================ */
+
+/* 注册 */
+app.post("/api/register", async (req, res) => {
+  const username = String(req.body.username || "").trim();
+  const pwd = String(req.body.password || "");
+  const pwd2 = String(req.body.password2 || "");
+  /* 校验规则：账号3-16位，密码>=6，两次一致 */
+  if (!/^[A-Za-z0-9_\u4e00-\u9fa5]{3,16}$/.test(username))
+    return res.status(400).json({ error: "账号需为3-16位（字母/数字/中文/下划线）" });
+  if (pwd.length < 6) return res.status(400).json({ error: "密码不少于6位" });
+  if (pwd !== pwd2) return res.status(400).json({ error: "两次密码输入不一致" });
+
+  const result = await withLock(() => {
+    const key = username.toLowerCase();
+    if (users.byName[key]) return { err: "该账号已被注册，请直接登录" };
+    const uid = "u_" + crypto.randomBytes(5).toString("hex");
+    const u = {
+      uid, username, passwordHash: hashPwd(pwd), nickname: username,
+      points: WELCOME_POINTS, dreamCoins: WELCOME_COINS,
+      vipType: "none", vipExpireAt: 0, strikeCount: 0, banned: false,
+      lastCheckin: "", createdAt: Date.now(),
+    };
+    users.byUid[uid] = u; users.byName[key] = uid;
+    log(uid, "system", WELCOME_POINTS, "points", "新用户注册赠送积分");
+    saveUsers(); saveDB();
+    return { ok: true, token: newToken(uid), user: pubUser(u) };
+  });
+  if (result.err) return res.status(400).json({ error: result.err });
+  res.json(result);
+});
+
+/* 登录（账号错误5次 → 冻结10分钟） */
+app.post("/api/login", async (req, res) => {
+  const username = String(req.body.username || "").trim();
+  const pwd = String(req.body.password || "");
+  const key = "login_" + username.toLowerCase();
+  const ban = banLeft(key, 6e4);
+  if (ban) return res.status(429).json({ error: `尝试次数过多，请 ${ban} 分钟后再试` });
+
+  const result = await withLock(() => {
+    const uid = users.byName[username.toLowerCase()];
+    if (!uid) { markFail(key, 5, 6e5); return { err: "账号未注册，请先点击注册" }; }
+    const u = users.byUid[uid];
+    if (u.banned) return { err: "该账号已被永久封禁，如有疑问请联系主理人" };
+    if (!verifyPwd(pwd, u.passwordHash)) { markFail(key, 5, 6e5); return { err: "账号或密码错误" }; }
+    vipSweep(u); saveUsers();
+    return { ok: true, token: newToken(uid), user: pubUser(u) };
+  });
+  if (result.err) return res.status(400).json({ error: result.err });
+  clearFail(key);
+  res.json(result);
+});
+
+/* 当前用户资料（钱包/我的页实时拉取） */
+app.get("/api/user/profile", (req, res) => {
+  const u = authUser(req);
+  if (!u) return res.status(401).json({ error: "未登录" });
+  if (u.banned) return res.status(403).json({ error: "账号已封禁" });
+  vipSweep(u); saveUsers();
+  res.json({ user: pubUser(u), txs: db.transactions.filter(t => t.uid === u.uid).slice(0, 50) });
+});
+
+/* 改昵称（登录态） */
+app.post("/api/user/nickname", async (req, res) => {
+  const u = authUser(req);
+  if (!u) return res.status(401).json({ error: "未登录" });
+  const n = String(req.body.nickname || "").trim().slice(0, 20);
+  if (!n) return res.status(400).json({ error: "昵称不能为空" });
+  await withLock(() => { u.nickname = n; saveUsers(); });
+  res.json({ ok: true, nickname: n });
+});
+
+/* 退出登录：销毁token */
+app.post("/api/logout", (req, res) => {
+  delete tokens[String(req.headers["x-token"] || "")];
+  res.json({ ok: true });
+});
+
+/* ============================================================
+ * 四、业务接口（全部走 authUser → 真实用户）
  * ============================================================ */
 app.get("/api/status", (req, res) => res.json({ keyConfigured: !!AI_API_KEY }));
 
-/* 钱包信息 */
+/* 旧接口兼容：/api/wallet 转发 profile 的扁平结构 */
 app.get("/api/wallet", (req, res) => {
-  const uid = uidOf(req); if (!uid) return res.status(400).json({ error: "缺少UID" });
-  const u = getUser(uid); vipSweep(u); saveDB();
-  res.json({ points: u.points, dreamCoins: u.dreamCoins, vipType: u.vipType,
-    vipExpireTime: u.vipExpireTime, lastCheckin: u.lastCheckin,
-    txs: db.transactions.filter(t => t.uid === uid).slice(0, 50) });
+  const u = authUser(req); if (!u) return res.status(401).json({ error: "未登录" });
+  vipSweep(u); saveUsers();
+  res.json({ points: u.points, dreamCoins: u.dreamCoins,
+    vipType: u.vipType === "VIPZM" ? 1 : u.vipType === "VIPJF" ? 2 : 0,
+    vipExpireTime: u.vipExpireAt, lastCheckin: u.lastCheckin,
+    txs: db.transactions.filter(t => t.uid === u.uid).slice(0, 50) });
 });
 
 /* AI 生成 + 原子扣费 + 失败退款 */
 app.post("/api/generate", async (req, res) => {
+  const u0 = authUser(req); if (!u0) return res.status(401).json({ error: "请先登录后再造梦" });
+  if (u0.banned) return res.status(403).json({ error: "账号已封禁" });
   const { prompt = "", modelId = "basic", baseUrl, model } = req.body;
-  const uid = uidOf(req); if (!uid) return res.status(400).json({ error: "缺少UID" });
   const isAdmin = req.headers["x-admin-token"] === ADMIN_TOKEN;
   const tier = TIERS[modelId] || TIERS.basic;
   const cost = tier.cost + (prompt.length > EXTRA_CHARS ? EXTRA_COST : 0);
@@ -155,16 +267,14 @@ app.post("/api/generate", async (req, res) => {
 
   let deducted = false;
   await withLock(() => {
-    const u = getUser(uid); vipSweep(u);
+    const u = users.byUid[u0.uid]; vipSweep(u);
     if (u.points < cost) return;
     u.points -= cost; deducted = true;
-    log(uid, "ai", -cost, "points", `AI生成(${modelId})${prompt.length > EXTRA_CHARS ? " 含超字数+5" : ""}`);
-    saveDB();
+    log(u.uid, "ai", -cost, "points", `AI生成(${modelId})${prompt.length > EXTRA_CHARS ? " 含超字数+5" : ""}`);
+    saveUsers(); saveDB();
   });
-  if (!deducted) {
-    const u = getUser(uid);
-    return res.status(402).json({ error: `积分不足：本档需 ${cost}，当前余额 ${u.points}，可去钱包兑换卡密充值`, points: u.points });
-  }
+  if (!deducted)
+    return res.status(402).json({ error: `积分不足：本档需 ${cost}，当前余额 ${u0.points}，可去钱包兑换卡密`, points: u0.points });
 
   const sys = `你是「造梦AI」，根据用户需求输出一个零外部依赖的单文件HTML5网页/小游戏。` +
     `移动端必须内置虚拟摇杆或触控支持。只输出完整HTML代码，不要解释。` + tier.sys;
@@ -183,7 +293,7 @@ app.post("/api/generate", async (req, res) => {
     const m = text.match(/<!DOCTYPE html[\s\S]*<\/html>/i) || text.match(/<html[\s\S]*<\/html>/i);
     res.json({ model: useModel, cost, html: m ? m[0] : null, text: m ? null : text });
   } catch (e) {
-    await withLock(() => { const u = getUser(uid); u.points += cost; log(uid, "refund", +cost, "points", "AI失败退款"); saveDB(); });
+    await withLock(() => { const u = users.byUid[u0.uid]; u.points += cost; log(u.uid, "refund", +cost, "points", "AI失败退款"); saveUsers(); saveDB(); });
     res.status(502).json({ error: "生成失败已退款：" + e.message });
   }
 });
@@ -191,7 +301,7 @@ app.post("/api/generate", async (req, res) => {
 /* 管理员验证 */
 app.post("/api/admin/verify", (req, res) => res.json({ admin: req.headers["x-admin-token"] === ADMIN_TOKEN }));
 
-/* 批量生成动态卡密（管理员，最少20） */
+/* 批量生成动态卡密（管理员） */
 app.post("/api/admin/gencodes", (req, res) => {
   if (req.headers["x-admin-token"] !== ADMIN_TOKEN) return res.status(403).json({ error: "无权" });
   const { type, amount = 0, count = 20 } = req.body;
@@ -207,11 +317,10 @@ app.post("/api/admin/gencodes", (req, res) => {
   res.json({ count: out.length, codes: out });
 });
 
-/* ★ 卡密库存看板（管理员）：各档位总量/剩余/已核销明细 ★ */
+/* 卡密库存看板（管理员） */
 app.get("/api/admin/cards", (req, res) => {
   if (req.headers["x-admin-token"] !== ADMIN_TOKEN) return res.status(403).json({ error: "无权" });
-  const stats = {};   // tier → {total, left, used}
-  const usedList = []; // 已核销明细
+  const stats = {}, usedList = [];
   for (const c of Object.values(cards)) {
     const s = stats[c.tier] || (stats[c.tier] = { total: 0, left: 0, used: 0 });
     s.total++;
@@ -222,46 +331,48 @@ app.get("/api/admin/cards", (req, res) => {
   res.json({ stats, usedList: usedList.slice(0, 100), totalCards: Object.keys(cards).length });
 });
 
-/* ★ 统一核销接口：预置卡密 + 动态生成卡密，锁内原子 ★ */
+/* 统一核销（锁内原子 + 防爆破） */
 app.post("/api/redeem", async (req, res) => {
-  const uid = uidOf(req); if (!uid) return res.status(400).json({ error: "缺少UID" });
-  const code = String(req.body.code || "").trim().toUpperCase(); // 转大写去空格
-  const ban = checkBan(uid);
+  const u0 = authUser(req); if (!u0) return res.status(401).json({ error: "请先登录后再兑换" });
+  if (u0.banned) return res.status(403).json({ error: "账号已封禁" });
+  const code = String(req.body.code || "").trim().toUpperCase();
+  const key = "rd_" + u0.uid;
+  const ban = banLeft(key, 6e4);
   if (ban) return res.status(429).json({ error: `输错次数过多，兑换已冻结 ${ban} 分钟` });
   const result = await withLock(() => {
     const c = cards[code];
     if (!c) return { err: "序列号无效" };
     if (c.used) return { err: "该序列号已被核销" };
-    const u = getUser(uid); vipSweep(u);
-    c.used = true; c.usedBy = uid; c.usedAt = Date.now();        // 锁内标记，防并发
+    const u = users.byUid[u0.uid]; vipSweep(u);
+    c.used = true; c.usedBy = u.uid; c.usedAt = Date.now();
     let msg;
-    if (CARD_RULES[c.tier]) msg = CARD_RULES[c.tier](u);          // 5档预置规则
-    else if (c.genType && GEN_TYPES[c.genType]) msg = GEN_TYPES[c.genType].apply(u, c.amount); // 动态卡
+    if (CARD_RULES[c.tier]) msg = CARD_RULES[c.tier](u);
+    else if (c.genType && GEN_TYPES[c.genType]) msg = GEN_TYPES[c.genType].apply(u, c.amount);
     else return { err: "序列号配置异常" };
     const cur = c.tier === "ZM1K" || c.tier === "VIPZM" || c.genType === "coins" ? "coins"
               : c.tier.startsWith("VIP") || (c.genType || "").startsWith("vip") ? "vip" : "points";
-    log(uid, "redeem", c.amount || 0, cur, `兑换 ${code} → ${msg}`);
-    saveDB(); saveCards();                                       // 立即持久化
+    log(u.uid, "redeem", c.amount || 0, cur, `兑换 ${code} → ${msg}`);
+    saveUsers(); saveDB(); saveCards();
     return { ok: true, msg };
   });
-  if (result.err) { markFail(uid); return res.status(400).json({ error: result.err }); }
-  clearFail(uid);
+  if (result.err) { markFail(key, 5, 36e5); return res.status(400).json({ error: result.err }); }
+  clearFail(key);
   res.json(result);
 });
 
 /* 每日签到 */
 app.post("/api/checkin", async (req, res) => {
-  const uid = uidOf(req); if (!uid) return res.status(400).json({ error: "缺少UID" });
+  const u0 = authUser(req); if (!u0) return res.status(401).json({ error: "请先登录后再签到" });
   const today = new Date().toISOString().slice(0, 10);
   const result = await withLock(() => {
-    const u = getUser(uid); vipSweep(u);
+    const u = users.byUid[u0.uid]; vipSweep(u);
     if (u.lastCheckin === today) return { err: "今日已签到，明天再来吧" };
     u.lastCheckin = today;
     let msg;
-    if (u.vipType === 1) { u.dreamCoins += 100; msg = "站点大会员签到 +100 造梦币"; log(uid, "checkin", 100, "coins", msg); }
-    else if (u.vipType === 2) { u.points += 100; msg = "积分大会员签到 +100 积分"; log(uid, "checkin", 100, "points", msg); }
-    else { u.dreamCoins += 10; msg = "签到成功 +10 造梦币"; log(uid, "checkin", 10, "coins", msg); }
-    saveDB();
+    if (u.vipType === "VIPZM") { u.dreamCoins += 100; msg = "站点大会员签到 +100 造梦币"; log(u.uid, "checkin", 100, "coins", msg); }
+    else if (u.vipType === "VIPJF") { u.points += 100; msg = "积分大会员签到 +100 积分"; log(u.uid, "checkin", 100, "points", msg); }
+    else { u.dreamCoins += 10; msg = "签到成功 +10 造梦币"; log(u.uid, "checkin", 10, "coins", msg); }
+    saveUsers(); saveDB();
     return { ok: true, msg };
   });
   if (result.err) return res.status(400).json({ error: result.err });
@@ -270,20 +381,21 @@ app.post("/api/checkin", async (req, res) => {
 
 /* 打赏（A→B，平台抽成10%，锁内事务） */
 app.post("/api/tip", async (req, res) => {
-  const uid = uidOf(req); if (!uid) return res.status(400).json({ error: "缺少UID" });
+  const u0 = authUser(req); if (!u0) return res.status(401).json({ error: "请先登录后再打赏" });
   const amt = Math.floor(parseInt(req.body.amount) || 0);
   const toUid = String(req.body.toUid || "").slice(0, 40);
   if (amt <= 0 || amt > 100000) return res.status(400).json({ error: "金额无效" });
-  if (!toUid || toUid === uid) return res.status(400).json({ error: "不能打赏自己" });
+  if (!toUid || toUid === u0.uid) return res.status(400).json({ error: "不能打赏自己" });
   const result = await withLock(() => {
-    const a = getUser(uid); vipSweep(a);
+    const a = users.byUid[u0.uid];
     if (a.dreamCoins < amt) return { err: `造梦币不足：需 ${amt}，当前 ${a.dreamCoins}` };
+    const b = users.byUid[toUid];
+    if (!b) return { err: "对方用户不存在" };
     const fee = Math.floor(amt * 0.1);
-    const b = getUser(toUid);
     a.dreamCoins -= amt; b.dreamCoins += amt - fee; db.platform.dreamCoins += fee;
-    log(uid, "tip_out", -amt, "coins", `打赏 ${toUid}（对方实收${amt - fee}，平台抽成${fee}）`);
-    log(b.uid, "tip_in", +(amt - fee), "coins", `收到 ${uid} 打赏`);
-    saveDB();
+    log(a.uid, "tip_out", -amt, "coins", `打赏 ${toUid}（对方实收${amt - fee}，平台抽成${fee}）`);
+    log(b.uid, "tip_in", +(amt - fee), "coins", `收到 ${a.uid} 打赏`);
+    saveUsers(); saveDB();
     return { ok: true, msg: `打赏成功！对方实收 ${amt - fee} 造梦币` };
   });
   if (result.err) return res.status(400).json({ error: result.err });

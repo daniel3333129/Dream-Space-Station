@@ -95,6 +95,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .pn{font-size:17px;font-weight:700;cursor:pointer}
 .pn .e{font-size:11px;color:#3B82F6;font-weight:400;margin-left:6px}
 .pbd{font-size:10px;color:#fff;background:linear-gradient(90deg,#2563EB,#60A5FA);padding:1px 7px;border-radius:8px;vertical-align:middle;margin-left:6px}
+.pbd.vip{background:linear-gradient(90deg,#F59E0B,#FBBF24)}
 .pid{font-size:11px;color:#94A3B8;margin-top:3px}
 .pb2{font-size:12px;color:#64748B;line-height:1.7;margin:12px 0}
 .pst{display:flex;justify-content:space-around;padding:10px 0 0}
@@ -113,7 +114,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .lm .tt{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lm .dd{font-size:11px;color:#94A3B8;margin-top:3px}
 .lr{font-size:14px;color:#2563EB;font-weight:600;white-space:nowrap}
-/* 钱包页（支付宝风格） */
+/* 钱包页 */
 .wl-head{border-radius:18px;padding:22px 18px;background:linear-gradient(135deg,#1D4ED8,#3B82F6 60%,#60A5FA);color:#fff;margin-bottom:14px;position:relative;overflow:hidden}
 .wl-head::after{content:"";position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.12);top:-60px;right:-40px}
 .wl-lab{font-size:12px;opacity:.85}
@@ -169,6 +170,30 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .zoomrow{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12px;color:#64748B}
 .zoomrow input{flex:1;accent-color:#2563EB}
 .code-out{font-size:10px;word-break:break-all;background:#F1F5F9;padding:10px;border-radius:8px;max-height:140px;overflow-y:auto;white-space:pre-wrap;line-height:1.8}
+/* ===== 登录/注册弹窗：深空黑 + 青蓝高亮 ===== */
+.auth-mask{position:fixed;inset:0;z-index:70;background:rgba(2,6,12,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
+.auth-mask.show{display:flex}
+.auth-box{width:100%;max-width:340px;background:#0B0B0F;border:1px solid rgba(34,211,238,.25);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(34,211,238,.12)}
+.auth-head{display:flex;border-bottom:1px solid rgba(255,255,255,.08)}
+.auth-tab{flex:1;text-align:center;padding:15px 0;font-size:14px;color:#6B7280;cursor:pointer;position:relative;background:#101014}
+.auth-tab.on{color:#22D3EE;font-weight:600;background:#0B0B0F}
+.auth-tab.on::after{content:"";position:absolute;bottom:0;left:25%;right:25%;height:2px;background:#22D3EE;box-shadow:0 0 8px #22D3EE}
+.auth-body{padding:22px 20px}
+.auth-logo{text-align:center;font-size:26px;margin-bottom:4px}
+.auth-title{text-align:center;font-size:15px;font-weight:700;color:#E5E7EB;margin-bottom:2px}
+.auth-sub{text-align:center;font-size:11px;color:#6B7280;margin-bottom:18px}
+.a-fd{margin-bottom:13px}
+.a-fd input{width:100%;padding:12px 14px;font-size:14px;color:#F3F4F6;background:#14141B;border:1px solid rgba(255,255,255,.1);border-radius:8px;outline:none}
+.a-fd input:focus{border-color:#22D3EE;box-shadow:0 0 10px rgba(34,211,238,.2)}
+.a-fd input::placeholder{color:#4B5563}
+.a-res{font-size:12px;color:#F87171;min-height:18px;margin-bottom:6px;text-align:center}
+.a-btn{width:100%;padding:12px;font-size:15px;font-weight:700;color:#0B0B0F;background:linear-gradient(135deg,#22D3EE,#0891B2);border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 16px rgba(34,211,238,.35)}
+.a-btn:active{transform:scale(.98)}
+.a-tip{margin-top:14px;text-align:center;font-size:11px;color:#4B5563;line-height:1.7}
+.auth-close{position:absolute;top:12px;right:14px;color:#6B7280;font-size:18px;cursor:pointer;z-index:2}
+.logout-row{display:flex;gap:10px;margin-top:8px}
+.logout-row .lg{flex:1;text-align:center;padding:11px;font-size:13px;color:#94A3B8;cursor:pointer;border-radius:10px;border:1px solid rgba(59,130,246,.25);background:rgba(255,255,255,.6)}
+.logout-row .lg.danger{color:#EF4444;border-color:rgba(239,68,68,.3)}
 </style>
 </head>
 <body>
@@ -206,7 +231,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   <div class="sync"><b>↻</b> 已连接造梦引擎 · 对话作品可一键试玩发布</div>
   <div class="cbody" id="cBody"></div>
   <div class="cin">
-    <span class="cred" id="credPill" onclick="goPage('wallet')">💰 --</span>
+    <span class="cred" id="credPill" onclick="needAuth(()=>goPage('wallet'))">💰 --</span>
     <input id="cIn" placeholder="给 造梦 AI 发消息…" onkeydown="if(event.key==='Enter')sendMsg()">
     <button class="sbtn" id="sBtn" onclick="sendMsg()">➤</button>
   </div>
@@ -229,7 +254,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   <div class="grid" id="plazaGrid"></div>
 </div>
 
-<!-- 钱包页（支付宝风格） -->
+<!-- 钱包页 -->
 <div class="page" id="pgWallet">
   <div class="wl-head">
     <div class="wl-lab">积分 · AI算力货币</div>
@@ -238,11 +263,11 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
       <div><div class="wl-lab">造梦币</div><div class="n" id="wlCn">--</div></div>
       <div><div class="wl-lab">会员身份</div><div class="n" id="wlVip">普通用户</div></div>
     </div>
-    <div class="wl-vip" id="wlVipExp">开通会员可享每日签到加成</div>
+    <div class="wl-vip" id="wlVipExp">登录后解锁钱包功能</div>
   </div>
   <div class="wl-acts">
-    <div class="card wl-act" onclick="openRedeem()"><div class="i">🎫</div><div class="t">兑换码</div></div>
-    <div class="card wl-act" onclick="doCheckin()"><div class="i">📅</div><div class="t">每日签到</div></div>
+    <div class="card wl-act" onclick="needAuth(openRedeem)"><div class="i">🎫</div><div class="t">兑换码</div></div>
+    <div class="card wl-act" onclick="needAuth(doCheckin)"><div class="i">📅</div><div class="t">每日签到</div></div>
     <div class="card wl-act" onclick="goPage('me')"><div class="i">👤</div><div class="t">个人主页</div></div>
     <div class="card wl-act" onclick="openCfg()"><div class="i">🛡</div><div class="t">管理通道</div></div>
   </div>
@@ -254,14 +279,18 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 <div class="page" id="pgMe">
   <div class="phead">
     <div class="pt">
-      <div class="pav" id="pAv" onclick="chgAv()"><span id="avEm">✦</span><div class="cam">换头像</div></div>
+      <div class="pav" id="pAv" onclick="needAuth(chgAv)"><span id="avEm">✦</span><div class="cam">换头像</div></div>
       <div>
-        <div class="pn" onclick="rename()"><span id="pnT">Play 1</span><span class="e">✎ 改名</span><span class="pbd">主理人</span></div>
+        <div class="pn"><span id="pnT">未登录</span><span class="e" id="pnE" onclick="needAuth(rename)" style="display:none">✎ 改名</span><span class="pbd" id="pbdT">主理人</span></div>
         <div class="pid" id="pidTxt">ID: --</div>
       </div>
     </div>
-    <div class="pb2" onclick="edBio()"><span id="pbT">啥也木有</span> <span style="color:#3B82F6;font-size:11px">✎</span></div>
+    <div class="pb2" onclick="needAuth(edBio)"><span id="pbT">啥也木有</span> <span style="color:#3B82F6;font-size:11px">✎</span></div>
     <div class="pst"><div><b id="stW">0</b><span>作品</span></div><div><b id="stCn">0</b><span>造梦币</span></div><div><b id="stF">0</b><span>动态</span></div></div>
+    <div class="logout-row" id="lgRow" style="display:none;padding:0 0 4px">
+      <div class="lg" onclick="goPage('wallet')">💰 我的钱包</div>
+      <div class="lg danger" onclick="doLogout()">⏻ 退出登录</div>
+    </div>
     <div class="mtabs">
       <div class="mtab on" onclick="setMT(0,this)">作品</div>
       <div class="mtab" onclick="setMT(1,this)">商品</div>
@@ -280,6 +309,39 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   <div class="bi" id="bnWallet" onclick="goPage('wallet')"><span class="ic">💰</span>钱包</div>
   <div class="bi" id="bnMe" onclick="goPage('me')"><span class="ic">👤</span>我的</div>
 </nav>
+
+<!-- ===== 登录/注册弹窗（深空黑 + 青蓝） ===== -->
+<div class="auth-mask" id="aMask">
+  <div class="auth-box" style="position:relative">
+    <span class="auth-close" onclick="cm('aMask')">✕</span>
+    <div class="auth-head">
+      <div class="auth-tab on" id="tabLogin" onclick="authTab(0)">账号登录</div>
+      <div class="auth-tab" id="tabReg" onclick="authTab(1)">新用户注册</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-logo">🚀</div>
+      <div class="auth-title">造梦空间站</div>
+      <div class="auth-sub" id="authSub">登录后同步你的积分 · 造梦币 · 会员</div>
+      <!-- 登录表单 -->
+      <div id="formLogin">
+        <div class="a-fd"><input id="lgU" placeholder="账号（用户名）" autocomplete="username"></div>
+        <div class="a-fd"><input id="lgP" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="a-res" id="lgRes"></div>
+        <button class="a-btn" onclick="doLogin()">立即登录</button>
+        <div class="a-tip">还没有账号？点上方「新用户注册」<br>连续输错 5 次将冻结 10 分钟</div>
+      </div>
+      <!-- 注册表单 -->
+      <div id="formReg" style="display:none">
+        <div class="a-fd"><input id="rgU" placeholder="账号（3-16位 字母/数字/中文）" autocomplete="username"></div>
+        <div class="a-fd"><input id="rgP" type="password" placeholder="设置密码（不少于6位）" autocomplete="new-password"></div>
+        <div class="a-fd"><input id="rgP2" type="password" placeholder="确认密码" autocomplete="new-password" onkeydown="if(event.key==='Enter')doReg()"></div>
+        <div class="a-res" id="rgRes"></div>
+        <button class="a-btn" onclick="doReg()">完成注册并登录</button>
+        <div class="a-tip">注册即送 100 积分 + 50 造梦币<br>密码经加盐加密存储，主理人也无法查看</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 兑换码弹窗 -->
 <div class="mmask" id="rMask">
@@ -324,7 +386,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
 </div>
 
-<!-- 主理人控制台弹窗（通道 + 卡密生成 + 库存看板） -->
+<!-- 主理人控制台 -->
 <div class="mmask" id="cMask">
   <div class="card modal">
     <h2 class="glow">⚙ 主理人控制台</h2>
@@ -351,8 +413,8 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 <script>
 const $=id=>document.getElementById(id);
 let curHtml="",curPrompt="",admT=sessionStorage.getItem("dm_admin")||"",busy=false,meT=0;
-let UID=localStorage.getItem("dm_uid");
-if(!UID){UID="u_"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem("dm_uid",UID)}
+/* ===== 登录态：token + uid 持久化 ===== */
+let token=localStorage.getItem("dm_token")||"",me=null;
 const MD=[
 {id:"basic",n:"平民版 · Gemini 驱动",lb:"Gemini 快速",c:5,d:"限40行代码，仅基础逻辑"},
 {id:"gpt4",n:"ChatGPT 4",lb:"ChatGPT 4",c:10,d:"均衡创作，功能完整"},
@@ -363,27 +425,86 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 const cm=id=>$(id).classList.remove("show");
 const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
 const SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const api=(url,opt={})=>fetch(url,{...opt,headers:{"Content-Type":"application/json","x-uid":UID,...(admT?{"x-admin-token":admT}:{})}});
+const api=(url,opt={})=>fetch(url,{...opt,headers:{"Content-Type":"application/json","x-token":token,...(admT?{"x-admin-token":admT}:{})}});
 document.querySelectorAll(".mmask").forEach(m=>m.addEventListener("click",e=>{if(e.target===m&&m.id!=="crMask")m.classList.remove("show")}));
+
+/* ===== 登录/注册弹窗 ===== */
+let authDone=null;
+function needAuth(fn){if(me){fn();return}authDone=fn;openAuth()}
+function openAuth(){$("lgRes").textContent="";$("rgRes").textContent="";$("aMask").classList.add("show")}
+function authTab(i){
+  $("tabLogin").classList.toggle("on",i===0);$("tabReg").classList.toggle("on",i===1);
+  $("formLogin").style.display=i===0?"":"none";$("formReg").style.display=i===1?"":"none";
+  $("authSub").textContent=i===0?"登录后同步你的积分 · 造梦币 · 会员":"注册即送 100 积分 + 50 造梦币";
+}
+function afterAuth(d){
+  token=d.token;localStorage.setItem("dm_token",token);me=d.user;
+  cm("aMask");syncUI();rWallet();feed("登录了造梦空间站");
+  if(authDone){const f=authDone;authDone=null;f()}
+}
+async function doLogin(){
+  const u=$("lgU").value.trim(),p=$("lgP").value;
+  if(!u||!p){$("lgRes").textContent="请输入账号和密码";return}
+  $("lgRes").textContent="登录中…";
+  try{const d=await(await api("/api/login",{method:"POST",body:JSON.stringify({username:u,password:p})})).json();
+    if(d.ok)afterAuth(d);else $("lgRes").textContent=d.error}catch(e){$("lgRes").textContent="网络错误"}
+}
+async function doReg(){
+  const u=$("rgU").value.trim(),p=$("rgP").value,p2=$("rgP2").value;
+  if(!u||!p){$("rgRes").textContent="请填写完整";return}
+  if(p!==p2){$("rgRes").textContent="两次密码输入不一致";return}
+  $("rgRes").textContent="注册中…";
+  try{const d=await(await api("/api/register",{method:"POST",body:JSON.stringify({username:u,password:p,password2:p2})})).json();
+    if(d.ok){feed("注册了新账号「"+u+"」");afterAuth(d)}else $("rgRes").textContent=d.error}catch(e){$("rgRes").textContent="网络错误"}
+}
+async function doLogout(){
+  await api("/api/logout",{method:"POST",body:"{}"}).catch(()=>{});
+  token="";me=null;localStorage.removeItem("dm_token");
+  syncUI();goPage("home");feed("退出了登录");
+}
+/* 登录态刷新 UI */
+function syncUI(){
+  const p=prof();
+  if(me){
+    $("pnT").textContent=me.nickname||me.username;$("pnE").style.display="";
+    $("pidTxt").textContent="ID: "+me.uid;
+    $("pbdT").textContent=me.vipType==="VIPZM"?"站点大会员":me.vipType==="VIPJF"?"积分大会员":"主理人";
+    $("pbdT").classList.toggle("vip",me.vipType!=="none");
+    $("lgRow").style.display="flex";
+    $("credPill").textContent="💰 "+me.points;
+    $("stCn").textContent=me.dreamCoins;
+  }else{
+    $("pnT").textContent="未登录";$("pnE").style.display="none";
+    $("pidTxt").textContent="点击登录/注册";
+    $("pbdT").textContent="游客";$("pbdT").classList.remove("vip");
+    $("lgRow").style.display="none";$("credPill").textContent="💰 --";
+  }
+}
+/* 启动时尝试用保存的token恢复登录 */
+async function restore(){
+  if(!token){syncUI();return}
+  try{const d=await(await api("/api/user/profile")).json();
+    if(d.user){me=d.user;syncUI();rWallet()}
+    else{token="";localStorage.removeItem("dm_token");syncUI()}
+  }catch(e){syncUI()}
+}
 
 /* 模型 */
 const curM=()=>MD.find(m=>m.id===(localStorage.getItem("dm_mid")||"basic"))||MD[0];
 const rMT=()=>{const m=curM();$("cmTxt").textContent="当前模型："+m.lb+" · "+m.c+"积分/次"};
 function openMP(){$("mCr").textContent="｜余额见钱包";$("mList").innerHTML=MD.map(m=>`<div class="mi ${m.id===curM().id?'sel':''}" onclick="localStorage.setItem('dm_mid','${m.id}');rMT();openMP()"><div class="mif"><div class="mn">${m.n}</div><div class="md">${m.d}</div></div><div class="co">${m.c} 积分/次</div><div class="tk">${m.id===curM().id?'✓':''}</div></div>`).join("");$("mMask").classList.add("show")}
 
-/* 钱包（服务端权威数据） */
-let wallet=null;
+/* 钱包 */
 async function rWallet(){
-  try{const d=await(await api("/api/wallet")).json();
-    if(d.error)return;
-    wallet=d;
-    $("credPill").textContent="💰 "+d.points;
-    $("wlPts").innerHTML=d.points+"<small> 分</small>";
-    $("wlCn").textContent=d.dreamCoins;
-    $("stCn").textContent=d.dreamCoins;
-    const vt=d.vipType===1?"站点大会员":d.vipType===2?"积分大会员":"普通用户";
+  if(!me){$("txList").innerHTML='<div class="eb">🔒 登录后查看余额与账单</div>';$("wlPts").innerHTML="--<small> 分</small>";$("wlCn").textContent="--";$("wlVip").textContent="未登录";return}
+  try{const d=await(await api("/api/user/profile")).json();
+    if(!d.user){doLogout();return}
+    me=d.user;syncUI();
+    $("wlPts").innerHTML=me.points+"<small> 分</small>";
+    $("wlCn").textContent=me.dreamCoins;
+    const vt=me.vipType==="VIPZM"?"站点大会员":me.vipType==="VIPJF"?"积分大会员":"普通用户";
     $("wlVip").textContent=vt;
-    $("wlVipExp").textContent=d.vipType?("有效期至 "+new Date(d.vipExpireTime).toLocaleDateString()):(d.lastCheckin===new Date().toISOString().slice(0,10)?"今日已签到 ✓":"开通会员可享每日签到加成");
+    $("wlVipExp").textContent=me.vipType!=="none"?("有效期至 "+new Date(me.vipExpireAt).toLocaleDateString()):(me.lastCheckin===new Date().toISOString().slice(0,10)?"今日已签到 ✓":"开通会员可享每日签到加成");
     $("txList").innerHTML=d.txs.length?d.txs.map(t=>`<div class="card tx"><div class="ti"><div class="tt">${esc(t.note)}</div><div class="td">${new Date(t.time).toLocaleString()}</div></div><div class="ta ${t.delta>=0?'plus':'minus'}">${t.delta>=0?'+':''}${t.delta} ${t.cur==='points'?'积分':t.cur==='coins'?'币':'VIP'}</div></div>`).join(""):'<div class="eb">暂无账单</div>';
   }catch(e){}
 }
@@ -391,6 +512,7 @@ async function rWallet(){
 /* 页面切换 */
 const PM={home:"pgHome",plaza:"pgPlaza",me:"pgMe",dream:"pgDream",wallet:"pgWallet"};
 function goPage(p){
+  if((p==="wallet"||p==="me")&&!me){needAuth(()=>goPage(p));return}
   Object.values(PM).forEach(id=>$(id).classList.remove("show"));
   $(PM[p]).classList.add("show");
   ["Home","Plaza","Me","Wallet"].forEach(k=>$("bn"+k).classList.toggle("on",k.toLowerCase()===p));
@@ -407,7 +529,9 @@ function aMsg(t,w){const d=document.createElement("div");d.className="msg "+w;d.
 function aWork(p){const d=document.createElement("div");d.className="msg a";d.innerHTML=`✦ 作品已生成完毕！<br><span style="font-size:11px;color:#8B8FA3">「${esc(p.slice(0,30))}」已就绪</span><div class="wa"><span class="wb sl" onclick="opPrev()">▶ 立即试玩</span><span class="wb" onclick="publish()">✦ 发布广场</span><span class="wb" onclick="expHtml()">⬇ 导出</span></div>`;$("cBody").appendChild(d);$("cBody").scrollTop=1e9}
 function clearChat(){$("cBody").innerHTML=WELCOME}
 async function sendMsg(){
-  if(busy)return;const t=$("cIn").value.trim();if(!t)return;
+  if(busy)return;
+  if(!me){needAuth(sendMsg);return}
+  const t=$("cIn").value.trim();if(!t)return;
   $("cIn").value="";busy=true;$("sBtn").disabled=true;
   aMsg(t,"u");const tp=aMsg("造梦 AI 正在创作中…","a tp");
   const bd={prompt:t,modelId:curM().id};
@@ -441,14 +565,17 @@ function clPrev(){$("pMask").classList.remove("show")}
 function pRefresh(){if(curHtml)$("sandbox").srcdoc=curHtml}
 function expHtml(){if(!curHtml)return;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([curHtml],{type:"text/html"}));a.download="dream_"+Date.now()+".html";a.click()}
 
-/* 个人资料（默认名 Play 1，简介「啥也木有」） */
-const DP={name:"Play 1",bio:"啥也木有",avatar:""};
+/* 个人资料（本地外观缓存，昵称走服务端） */
+const DP={bio:"啥也木有",avatar:""};
 const prof=()=>Object.assign({},DP,LS("dm_pf",{}));
-function rPf(){const p=prof();$("pnT").textContent=p.name;$("pbT").textContent=p.bio;$("pidTxt").textContent="ID: "+UID;
+function rPf(){const p=prof();$("pbT").textContent=p.bio;
   const im=$("pAv").querySelector("img");
   if(p.avatar){$("avEm").style.display="none";if(!im){const i=document.createElement("img");i.src=p.avatar;$("pAv").insertBefore(i,$("pAv").querySelector(".cam"))}else im.src=p.avatar}
-  else{$("avEm").style.display="";if(im)im.remove()}}
-function rename(){const p=prof(),n=prompt("修改昵称：",p.name);if(n===null||!n.trim())return;p.name=n.trim().slice(0,20);SV("dm_pf",p);rPf();feed("修改昵称为「"+p.name+"」")}
+  else{$("avEm").style.display="";if(im)im.remove()}
+  syncUI()}
+async function rename(){const n=prompt("修改昵称：",me?me.nickname:"");if(n===null||!n.trim())return;
+  const d=await(await api("/api/user/nickname",{method:"POST",body:JSON.stringify({nickname:n.trim()})})).json();
+  if(d.ok){me.nickname=d.nickname;syncUI();feed("修改昵称为「"+d.nickname+"」")}else alert("❌ "+(d.error||"修改失败"))}
 function edBio(){const p=prof(),n=prompt("修改简介：",p.bio);if(n===null)return;p.bio=n.trim().slice(0,120)||"啥也木有";SV("dm_pf",p);rPf();feed("更新了个人简介")}
 
 /* 头像 1:1 裁剪 */
@@ -479,8 +606,8 @@ function applyCrop(){const S=256,c=document.createElement("canvas");c.width=c.he
 const works=()=>LS("dm_works",[]);
 function publish(){
   if(!curHtml){aMsg("还没有可发布的作品，先让我帮你造一个吧","a");return}
-  const a=prompt("输入创作者署名（明码展示）：",prof().name);if(a===null)return;
-  const w=works();w.unshift({id:Date.now(),uid:UID,title:curPrompt.slice(0,20)||"未命名梦境",desc:curPrompt,author:a||"匿名造梦师",price:"免费试玩",html:curHtml,time:new Date().toLocaleString()});
+  const a=prompt("输入创作者署名（明码展示）：",me?me.nickname:"匿名");if(a===null)return;
+  const w=works();w.unshift({id:Date.now(),uid:me?me.uid:"",title:curPrompt.slice(0,20)||"未命名梦境",desc:curPrompt,author:a||"匿名造梦师",price:"免费试玩",html:curHtml,time:new Date().toLocaleString()});
   SV("dm_works",w);feed("发布了新作品「"+w[0].title+"」");clPrev();goPage("plaza");
 }
 const wHTML=w=>`<div class="card wc" onclick="loadW(${w.id})"><span class="wd" onclick="event.stopPropagation();delW(${w.id})">✕</span><h3>${esc(w.title)}</h3><p>${esc(w.desc)}</p><div class="wm"><span>✎ ${esc(w.author)} · ${w.time.slice(0,10)}</span><span><span class="tipb" onclick="doTip('${w.uid||""}','${esc(w.author)}',event)">💛 打赏</span> <span class="tp">H5互动</span></span></div></div>`;
@@ -516,6 +643,7 @@ async function verAdm(){const t=$("aTk").value.trim();if(!t){$("lRes").textConte
     if(d.admin){admT=t;sessionStorage.setItem("dm_admin",t);cm("lMask");openCfg()}else $("lRes").textContent="❌ 口令错误，无权访问"}catch(e){$("lRes").textContent="❌ 无法连接后端"}}
 function saveCfg(){localStorage.setItem("dm_base",$("cfB").value.trim());localStorage.setItem("dm_model",$("cfM").value.trim());cm("cMask")}
 async function testCh(){$("tRes").textContent="⚡ 测试中…";
+  if(!me){$("tRes").textContent="❌ 请先登录再测试";return}
   try{const d=await(await api("/api/generate",{method:"POST",body:JSON.stringify({prompt:"输出一个显示OK的HTML页面",baseUrl:$("cfB").value.trim()||undefined,model:$("cfM").value.trim()||undefined,modelId:"basic"})})).json();
     $("tRes").textContent=d.error?("❌ "+d.error):("✅ 连通成功 · "+d.model+"（测试扣5积分）");rWallet()}catch(e){$("tRes").textContent="❌ "+e.message}}
 async function genCodes(){
@@ -525,7 +653,7 @@ async function genCodes(){
 
 /* 启动 */
 $("cBody").innerHTML=WELCOME;
-rPf();rMT();rWallet();chkSt();setInterval(chkSt,30000);
+rPf();rMT();restore();chkSt();setInterval(chkSt,30000);
 </script>
 </body>
 </html>
