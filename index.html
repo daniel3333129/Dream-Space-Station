@@ -29,22 +29,26 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .page{position:relative;z-index:5;height:calc(100% - 52px - 58px);overflow-y:auto;display:none}
 .page.show{display:block}
 #pgDream.show{display:flex}
-#pgHome,#pgPlaza,#pgWallet{padding:14px}
+#pgHome,#pgPlaza,#pgWallet,#pgSearch{padding:14px}
 .sh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .sh .t{font-size:17px;font-weight:700}
 .sh .s{font-size:11px;color:#94A3B8}
-.eb{text-align:center;color:#94A3B8;padding:60px 0;font-size:14px}
+.searchbtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#2563EB;cursor:pointer;border-radius:10px;border:1px solid rgba(59,130,246,.35);background:rgba(219,234,254,.7)}
+.searchbtn:hover{background:rgba(191,219,254,.9)}
+.eb{text-align:center;color:#94A3B8;padding:40px 0;font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.vgrid{display:flex;flex-direction:column;gap:14px}
 .wc{padding:16px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
 .wc::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% -20%,rgba(147,197,253,.4),transparent 60%)}
 .wc:hover{transform:translateY(-3px);border-color:#3B82F6;box-shadow:0 8px 26px rgba(59,130,246,.25)}
 .wc h3{font-size:15px;margin-bottom:6px}
 .wc p{font-size:12px;color:#64748B;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.wm{display:flex;justify-content:space-between;font-size:11px;color:#94A3B8;align-items:center}
+.wm{display:flex;justify-content:space-between;font-size:11px;color:#94A3B8;align-items:center;gap:6px;flex-wrap:wrap}
 .wm .tp{color:#2563EB;border:1px solid rgba(59,130,246,.4);padding:1px 8px;border-radius:10px}
 .wd{position:absolute;top:10px;right:10px;font-size:12px;color:#94A3B8;cursor:pointer;z-index:2;padding:2px 6px}
 .wd:hover{color:#EF4444}
 .tipb{font-size:11px;color:#F59E0B;border:1px solid rgba(245,158,11,.4);padding:2px 8px;border-radius:10px;cursor:pointer;background:rgba(254,243,199,.5);position:relative;z-index:2}
+.buyb{font-size:11px;color:#fff;background:linear-gradient(135deg,#2563EB,#3B82F6);padding:3px 10px;border-radius:10px;cursor:pointer;position:relative;z-index:2}
 /* AI 对话页 */
 #pgDream{padding:0;flex-direction:column;background:#0B0B0F}
 .chead{height:56px;display:flex;align-items:center;padding:0 14px;gap:10px;background:#101014;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
@@ -112,7 +116,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .lic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:radial-gradient(circle at 30% 30%,#BFDBFE,#93C5FD);border:1px solid rgba(59,130,246,.3);flex-shrink:0}
 .lm{flex:1;min-width:0}
 .lm .tt{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lm .dd{font-size:11px;color:#94A3B8;margin-top:3px}
+.lm .dd{font-size:11px;color:#94A3B8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lr{font-size:14px;color:#2563EB;font-weight:600;white-space:nowrap}
 /* 钱包页 */
 .wl-head{border-radius:18px;padding:22px 18px;background:linear-gradient(135deg,#1D4ED8,#3B82F6 60%,#60A5FA);color:#fff;margin-bottom:14px;position:relative;overflow:hidden}
@@ -130,7 +134,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .wl-act .t{font-size:11px;color:#64748B;margin-top:6px}
 .tx{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:8px}
 .tx .ti{flex:1;min-width:0}
-.tx .tt{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx .tt{font-size:13px}
 .tx .td{font-size:10px;color:#94A3B8;margin-top:2px}
 .tx .ta{font-size:14px;font-weight:700;white-space:nowrap}
 .tx .ta.plus{color:#16A34A}.tx .ta.minus{color:#EF4444}
@@ -149,7 +153,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .modal h2{font-size:16px;margin-bottom:14px}
 .fd{margin-bottom:13px}
 .fd label{display:block;font-size:12px;color:#64748B;margin-bottom:6px}
-.fd input,.fd select{width:100%;padding:10px 12px;font-size:14px;color:#1E293B;background:rgba(255,255,255,.9);border:1px solid rgba(59,130,246,.3);border-radius:8px;outline:none}
+.fd input,.fd select,.fd textarea{width:100%;padding:10px 12px;font-size:14px;color:#1E293B;background:rgba(255,255,255,.9);border:1px solid rgba(59,130,246,.3);border-radius:8px;outline:none;font-family:inherit}
 .mbt{display:flex;gap:10px;margin-top:16px}
 .mbt .mb{flex:1;padding:10px;font-size:14px;text-align:center}
 .mb{padding:6px 11px;font-size:12px;color:#1D4ED8;cursor:pointer;border-radius:7px;background:rgba(219,234,254,.6);border:1px solid rgba(59,130,246,.3)}
@@ -170,10 +174,43 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .zoomrow{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12px;color:#64748B}
 .zoomrow input{flex:1;accent-color:#2563EB}
 .code-out{font-size:10px;word-break:break-all;background:#F1F5F9;padding:10px;border-radius:8px;max-height:140px;overflow-y:auto;white-space:pre-wrap;line-height:1.8}
-/* ===== 登录/注册弹窗：深空黑 + 青蓝高亮 ===== */
+/* 搜索页 */
+.sbar{position:sticky;top:0;z-index:3;display:flex;gap:10px;margin-bottom:14px;background:linear-gradient(180deg,#EFF6FF,rgba(239,246,255,.85));padding-bottom:8px}
+.sbar input{flex:1;padding:11px 14px;font-size:14px;color:#1E293B;background:#fff;border:1px solid rgba(59,130,246,.35);border-radius:10px;outline:none}
+.sbar input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.sbar .sb{width:74px;text-align:center;padding:11px 0;font-size:14px;color:#fff;font-weight:600;cursor:pointer;border-radius:10px;background:linear-gradient(135deg,#2563EB,#3B82F6);border:none}
+.ssec{margin-bottom:20px}
+.ssec .hd{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.ssec .hd .tt{font-size:15px;font-weight:700}
+.ssec .hd .cn{font-size:11px;color:#2563EB;background:rgba(219,234,254,.8);border:1px solid rgba(59,130,246,.3);padding:1px 9px;border-radius:10px}
+/* 商品 / 视频 */
+.px{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:10px}
+.px .pi{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:radial-gradient(circle at 30% 30%,#FDE68A,#F59E0B);flex-shrink:0}
+.px .pm{flex:1;min-width:0}
+.px .pm .pn2{font-size:14px;font-weight:700}
+.px .pm .pd2{font-size:11px;color:#94A3B8;margin-top:3px}
+.px .pp{font-size:13px;font-weight:800;color:#F59E0B;white-space:nowrap}
+.px .pp small{font-size:10px;font-weight:400;color:#94A3B8}
+.vc{padding:16px}
+.vc .vh{cursor:pointer}
+.vc .vt{font-size:15px;font-weight:700}
+.vc .va{font-size:11px;color:#94A3B8;margin-top:4px}
+.vc .vd{font-size:12px;color:#64748B;line-height:1.7;margin:8px 0}
+.vtags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.vtags .tg{font-size:10px;color:#2563EB;background:rgba(219,234,254,.8);border:1px solid rgba(59,130,246,.25);padding:1px 8px;border-radius:10px}
+.vacts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.vb{font-size:12px;color:#475569;cursor:pointer;padding:5px 11px;border-radius:10px;background:rgba(241,245,249,.9);border:1px solid rgba(148,163,184,.35);user-select:none}
+.vb.on{color:#fff;background:linear-gradient(135deg,#2563EB,#3B82F6);border-color:#2563EB}
+.vcm{background:rgba(241,245,249,.6);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.cmt{font-size:11px;color:#64748B;line-height:1.7}
+.cmt b{color:#2563EB}
+.cmt span{color:#B0B7C3;margin-left:6px;font-size:10px}
+.cin2{display:flex;gap:8px}
+.cin2 input{flex:1;padding:9px 12px;font-size:13px;border:1px solid rgba(59,130,246,.3);border-radius:8px;outline:none;background:#fff}
+/* 登录/注册 */
 .auth-mask{position:fixed;inset:0;z-index:70;background:rgba(2,6,12,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}
 .auth-mask.show{display:flex}
-.auth-box{width:100%;max-width:340px;background:#0B0B0F;border:1px solid rgba(34,211,238,.25);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(34,211,238,.12)}
+.auth-box{width:100%;max-width:340px;background:#0B0B0F;border:1px solid rgba(34,211,238,.25);border-radius:14px;overflow:hidden;box-shadow:0 0 40px rgba(34,211,238,.12);position:relative}
 .auth-head{display:flex;border-bottom:1px solid rgba(255,255,255,.08)}
 .auth-tab{flex:1;text-align:center;padding:15px 0;font-size:14px;color:#6B7280;cursor:pointer;position:relative;background:#101014}
 .auth-tab.on{color:#22D3EE;font-weight:600;background:#0B0B0F}
@@ -188,7 +225,6 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 .a-fd input::placeholder{color:#4B5563}
 .a-res{font-size:12px;color:#F87171;min-height:18px;margin-bottom:6px;text-align:center}
 .a-btn{width:100%;padding:12px;font-size:15px;font-weight:700;color:#0B0B0F;background:linear-gradient(135deg,#22D3EE,#0891B2);border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 16px rgba(34,211,238,.35)}
-.a-btn:active{transform:scale(.98)}
 .a-tip{margin-top:14px;text-align:center;font-size:11px;color:#4B5563;line-height:1.7}
 .auth-close{position:absolute;top:12px;right:14px;color:#6B7280;font-size:18px;cursor:pointer;z-index:2}
 .logout-row{display:flex;gap:10px;margin-top:8px}
@@ -207,7 +243,11 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 
 <!-- 首页 -->
 <div class="page show" id="pgHome">
-  <div class="sh"><span class="t glow">欢迎来到造梦空间站</span></div>
+  <div class="sh">
+    <span class="t glow">欢迎来到造梦空间站</span>
+    <div class="sp"></div>
+    <div class="searchbtn" title="搜索游戏 / 用户 / 商品" onclick="goPage('search')">🔍</div>
+  </div>
   <div class="card" style="padding:24px;text-align:center;margin-bottom:14px">
     <div style="font-size:40px;margin-bottom:10px">🚀</div>
     <div style="font-size:15px;font-weight:700;margin-bottom:8px">源光工坊 · H5 创作者平台</div>
@@ -216,6 +256,15 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
   <div class="sh"><span class="t">热门作品</span><span class="s">· 来自造梦广场</span></div>
   <div class="grid" id="homeGrid"></div>
+</div>
+
+<!-- 搜索页 -->
+<div class="page" id="pgSearch">
+  <div class="sbar">
+    <input id="sq" placeholder="搜索游戏 / 用户 / 商品…" onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="sb" onclick="doSearch()">确认</button>
+  </div>
+  <div id="sRes"><div class="eb">输入关键词后点「确认」，将同时搜索 游戏 / 用户 / 商品</div></div>
 </div>
 
 <!-- AI 对话页 -->
@@ -240,17 +289,24 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 <!-- 沙盒浮层 -->
 <div class="pmask" id="pMask">
   <div class="ptop">
-    <span class="pb" onclick="clPrev()">‹ 返回对话</span>
+    <span class="pb" onclick="clPrev()">‹ 关闭</span>
     <span class="tt">沙盒试玩中</span>
     <span class="pb" onclick="pRefresh()">↻</span>
     <span class="pb" onclick="publish()">发布</span>
   </div>
-  <iframe id="sandbox" sandbox="allow-scripts" title="沙盒预览"></iframe>
+  <iframe id="sandbox" sandbox="allow-scripts allow-same-origin" title="沙盒预览"></iframe>
 </div>
 
-<!-- 广场页 -->
+<!-- 广场页（游戏 / 商品 / 视频） -->
 <div class="page" id="pgPlaza">
-  <div class="sh"><span class="t glow">造梦广场</span><span class="s">· 明码标价 · 点击卡片即刻试玩</span></div>
+  <div class="sh"><span class="t glow">造梦广场</span><div class="sp"></div>
+    <span class="mb" id="pubBtn" onclick="plazaPublish()">＋ 发布</span>
+  </div>
+  <div class="mtabs" id="plazaTabs" style="border-top:none;margin-bottom:12px">
+    <div class="mtab on" data-tab="game" onclick="setPT('game')">🎮 游戏</div>
+    <div class="mtab" data-tab="product" onclick="setPT('product')">🛒 商品</div>
+    <div class="mtab" data-tab="video" onclick="setPT('video')">🎬 视频</div>
+  </div>
   <div class="grid" id="plazaGrid"></div>
 </div>
 
@@ -310,9 +366,9 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   <div class="bi" id="bnMe" onclick="goPage('me')"><span class="ic">👤</span>我的</div>
 </nav>
 
-<!-- ===== 登录/注册弹窗（深空黑 + 青蓝） ===== -->
+<!-- 登录/注册 -->
 <div class="auth-mask" id="aMask">
-  <div class="auth-box" style="position:relative">
+  <div class="auth-box">
     <span class="auth-close" onclick="cm('aMask')">✕</span>
     <div class="auth-head">
       <div class="auth-tab on" id="tabLogin" onclick="authTab(0)">账号登录</div>
@@ -322,7 +378,6 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
       <div class="auth-logo">🚀</div>
       <div class="auth-title">造梦空间站</div>
       <div class="auth-sub" id="authSub">登录后同步你的积分 · 造梦币 · 会员</div>
-      <!-- 登录表单 -->
       <div id="formLogin">
         <div class="a-fd"><input id="lgU" placeholder="账号（用户名）" autocomplete="username"></div>
         <div class="a-fd"><input id="lgP" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -330,7 +385,6 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
         <button class="a-btn" onclick="doLogin()">立即登录</button>
         <div class="a-tip">还没有账号？点上方「新用户注册」<br>连续输错 5 次将冻结 10 分钟</div>
       </div>
-      <!-- 注册表单 -->
       <div id="formReg" style="display:none">
         <div class="a-fd"><input id="rgU" placeholder="账号（3-16位 字母/数字/中文）" autocomplete="username"></div>
         <div class="a-fd"><input id="rgP" type="password" placeholder="设置密码（不少于6位）" autocomplete="new-password"></div>
@@ -343,7 +397,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
 </div>
 
-<!-- 兑换码弹窗 -->
+<!-- 兑换码 -->
 <div class="mmask" id="rMask">
   <div class="card modal" style="max-width:360px">
     <h2 class="glow">🎫 序列码兑换</h2>
@@ -354,7 +408,32 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
 </div>
 
-<!-- 头像裁剪弹窗 -->
+<!-- 发布商品 -->
+<div class="mmask" id="pdMask">
+  <div class="card modal">
+    <h2 class="glow">🛒 发布商品</h2>
+    <div class="fd"><label>商品名称</label><input id="pdN" placeholder="如：像素风游戏素材包"></div>
+    <div class="fd"><label>商品简介</label><textarea id="pdD" rows="3" placeholder="介绍你的商品内容"></textarea></div>
+    <div class="fd"><label>售价（造梦币）</label><input id="pdP" type="number" placeholder="如 100"></div>
+    <div class="tr" id="pdRes"></div>
+    <div class="mbt"><button class="mb" onclick="cm('pdMask')">取消</button><button class="mb pr" onclick="doPublishProduct()">立即上架</button></div>
+  </div>
+</div>
+
+<!-- 发布视频 -->
+<div class="mmask" id="vdMask">
+  <div class="card modal">
+    <h2 class="glow">🎬 发布视频</h2>
+    <div class="fd"><label>视频标题</label><input id="vdT" placeholder="给你的视频取个名字"></div>
+    <div class="fd"><label>简介</label><textarea id="vdD" rows="3" placeholder="视频内容简介"></textarea></div>
+    <div class="fd"><label>标签（逗号分隔）</label><input id="vdG" placeholder="如：教程, 造梦, H5"></div>
+    <div class="fd"><label>视频 / 预览地址</label><input id="vdU" placeholder="https://…（mp4 直链或可嵌入页面）"></div>
+    <div class="tr" id="vdRes"></div>
+    <div class="mbt"><button class="mb" onclick="cm('vdMask')">取消</button><button class="mb pr" onclick="doPublishVideo()">立即发布</button></div>
+  </div>
+</div>
+
+<!-- 头像裁剪 -->
 <div class="mmask" id="crMask">
   <div class="card modal" style="max-width:340px">
     <h2 class="glow">✂ 裁剪头像（1 : 1）</h2>
@@ -365,7 +444,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
 </div>
 
-<!-- 模型弹窗 -->
+<!-- 模型 -->
 <div class="mmask" id="mMask">
   <div class="card modal">
     <h2 class="glow">✦ 选择造梦模型 <span style="font-size:11px;color:#94A3B8" id="mCr"></span></h2>
@@ -375,7 +454,7 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
   </div>
 </div>
 
-<!-- 口令弹窗 -->
+<!-- 主理人口令 -->
 <div class="mmask" id="lMask">
   <div class="card modal">
     <h2 class="glow">🛡 主理人权限验证</h2>
@@ -412,23 +491,23 @@ header{position:relative;z-index:10;height:52px;display:flex;align-items:center;
 
 <script>
 const $=id=>document.getElementById(id);
-let curHtml="",curPrompt="",admT=sessionStorage.getItem("dm_admin")||"",busy=false,meT=0;
-/* ===== 登录态：token + uid 持久化 ===== */
+let curHtml="",curPrompt="",curWorkId="",admT=sessionStorage.getItem("dm_admin")||"",busy=false,meT=0;
 let token=localStorage.getItem("dm_token")||"",me=null;
+let worksCache=[],productsCache=[],videosCache=[],plazaTab="game";
 const MD=[
 {id:"basic",n:"平民版 · Gemini 驱动",lb:"Gemini 快速",c:5,d:"限40行代码，仅基础逻辑"},
 {id:"gpt4",n:"ChatGPT 4",lb:"ChatGPT 4",c:10,d:"均衡创作，功能完整"},
 {id:"opus45",n:"Opus 4.5",lb:"Opus 4.5",c:13,d:"进阶逻辑与手感"},
 {id:"pro",n:"高级版 · ChatGPT 5 驱动",lb:"ChatGPT 5 高级",c:15,d:"限150行代码，含完整UI/动画"},
 {id:"ultra",n:"终极版 · Opus 5.5 驱动",lb:"Opus 5.5 终极",c:20,d:"200–300行，含复杂物理引擎"}];
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const cm=id=>$(id).classList.remove("show");
 const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
 const SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const api=(url,opt={})=>fetch(url,{...opt,headers:{"Content-Type":"application/json","x-token":token,...(admT?{"x-admin-token":admT}:{})}});
 document.querySelectorAll(".mmask").forEach(m=>m.addEventListener("click",e=>{if(e.target===m&&m.id!=="crMask")m.classList.remove("show")}));
 
-/* ===== 登录/注册弹窗 ===== */
+/* ===== 登录/注册 ===== */
 let authDone=null;
 function needAuth(fn){if(me){fn();return}authDone=fn;openAuth()}
 function openAuth(){$("lgRes").textContent="";$("rgRes").textContent="";$("aMask").classList.add("show")}
@@ -462,9 +541,7 @@ async function doLogout(){
   token="";me=null;localStorage.removeItem("dm_token");
   syncUI();goPage("home");feed("退出了登录");
 }
-/* 登录态刷新 UI */
 function syncUI(){
-  const p=prof();
   if(me){
     $("pnT").textContent=me.nickname||me.username;$("pnE").style.display="";
     $("pidTxt").textContent="ID: "+me.uid;
@@ -478,9 +555,9 @@ function syncUI(){
     $("pidTxt").textContent="点击登录/注册";
     $("pbdT").textContent="游客";$("pbdT").classList.remove("vip");
     $("lgRow").style.display="none";$("credPill").textContent="💰 --";
+    $("stCn").textContent="0";
   }
 }
-/* 启动时尝试用保存的token恢复登录 */
 async function restore(){
   if(!token){syncUI();return}
   try{const d=await(await api("/api/user/profile")).json();
@@ -489,45 +566,209 @@ async function restore(){
   }catch(e){syncUI()}
 }
 
-/* 模型 */
+/* ===== 模型 ===== */
 const curM=()=>MD.find(m=>m.id===(localStorage.getItem("dm_mid")||"basic"))||MD[0];
 const rMT=()=>{const m=curM();$("cmTxt").textContent="当前模型："+m.lb+" · "+m.c+"积分/次"};
 function openMP(){$("mCr").textContent="｜余额见钱包";$("mList").innerHTML=MD.map(m=>`<div class="mi ${m.id===curM().id?'sel':''}" onclick="localStorage.setItem('dm_mid','${m.id}');rMT();openMP()"><div class="mif"><div class="mn">${m.n}</div><div class="md">${m.d}</div></div><div class="co">${m.c} 积分/次</div><div class="tk">${m.id===curM().id?'✓':''}</div></div>`).join("");$("mMask").classList.add("show")}
 
-/* 钱包 */
+/* ===== 钱包 ===== */
 async function rWallet(){
   if(!me){$("txList").innerHTML='<div class="eb">🔒 登录后查看余额与账单</div>';$("wlPts").innerHTML="--<small> 分</small>";$("wlCn").textContent="--";$("wlVip").textContent="未登录";return}
   try{const d=await(await api("/api/user/profile")).json();
-    if(!d.user){doLogout();return}
+    if(!d.user){token="";localStorage.removeItem("dm_token");me=null;syncUI();return}
     me=d.user;syncUI();
     $("wlPts").innerHTML=me.points+"<small> 分</small>";
     $("wlCn").textContent=me.dreamCoins;
-    const vt=me.vipType==="VIPZM"?"站点大会员":me.vipType==="VIPJF"?"积分大会员":"普通用户";
-    $("wlVip").textContent=vt;
+    $("wlVip").textContent=me.vipType==="VIPZM"?"站点大会员":me.vipType==="VIPJF"?"积分大会员":"普通用户";
     $("wlVipExp").textContent=me.vipType!=="none"?("有效期至 "+new Date(me.vipExpireAt).toLocaleDateString()):(me.lastCheckin===new Date().toISOString().slice(0,10)?"今日已签到 ✓":"开通会员可享每日签到加成");
     $("txList").innerHTML=d.txs.length?d.txs.map(t=>`<div class="card tx"><div class="ti"><div class="tt">${esc(t.note)}</div><div class="td">${new Date(t.time).toLocaleString()}</div></div><div class="ta ${t.delta>=0?'plus':'minus'}">${t.delta>=0?'+':''}${t.delta} ${t.cur==='points'?'积分':t.cur==='coins'?'币':'VIP'}</div></div>`).join(""):'<div class="eb">暂无账单</div>';
   }catch(e){}
 }
 
-/* 页面切换 */
-const PM={home:"pgHome",plaza:"pgPlaza",me:"pgMe",dream:"pgDream",wallet:"pgWallet"};
-function goPage(p){
+/* ===== 页面切换 ===== */
+const PM={home:"pgHome",plaza:"pgPlaza",search:"pgSearch",me:"pgMe",dream:"pgDream",wallet:"pgWallet"};
+async function goPage(p){
   if((p==="wallet"||p==="me")&&!me){needAuth(()=>goPage(p));return}
   Object.values(PM).forEach(id=>$(id).classList.remove("show"));
   $(PM[p]).classList.add("show");
   ["Home","Plaza","Me","Wallet"].forEach(k=>$("bn"+k).classList.toggle("on",k.toLowerCase()===p));
   $("bnDream").classList.toggle("on",p==="dream");
-  if(p==="home")rHome();if(p==="plaza")rPlaza();if(p==="me")rMe();if(p==="wallet")rWallet();
+  if(p==="home"){await loadWorks();rHome()}
+  if(p==="plaza"){await loadAll();rPlaza()}
+  if(p==="me"){await loadWorks();rMe()}
+  if(p==="wallet")rWallet();
+  if(p==="search"){setTimeout(()=>$("sq").focus(),150)}
   if(p==="dream")setTimeout(()=>$("cIn").focus(),200);
 }
-function setMT(i,el){meT=i;document.querySelectorAll(".mtab").forEach(t=>t.classList.remove("on"));el.classList.add("on");rMe()}
+function setMT(i,el){meT=i;document.querySelectorAll("#pgMe .mtab").forEach(t=>t.classList.remove("on"));el.classList.add("on");rMe()}
 async function chkSt(){try{const d=await(await fetch("/api/status")).json();$("sDot").className="dot"+(d.keyConfigured?" on":" err");$("sTxt").textContent=d.keyConfigured?"引擎在线":"引擎在线 · 未配密钥"}catch(e){$("sDot").className="dot err";$("sTxt").textContent="后端离线"}}
 
-/* 对话 */
+/* ===== 搜索 ===== */
+async function doSearch(){
+  const q=$("sq").value.trim();
+  if(!q){$("sRes").innerHTML='<div class="eb">请输入关键词</div>';return}
+  $("sRes").innerHTML='<div class="eb">搜索中…</div>';
+  try{
+    const d=await(await api("/api/search?q="+encodeURIComponent(q))).json();
+    const sec=(t,n,html,empty)=>`<div class="ssec"><div class="hd"><span class="tt">${t}</span><span class="cn">匹配 ${n} 项</span></div>${n?html:`<div class="card eb">${empty}</div>`}</div>`;
+    const gamesHTML=`<div class="grid">`+d.games.map(g=>{
+      const click = g.type==="视频" ? `opUrl('${esc(g.url||"")}')` : `loadW('${esc(g.id)}')`;
+      return `<div class="card li" onclick="${click}"><div class="lic">${g.type==="视频"?"🎬":"🎮"}</div><div class="lm"><div class="tt">${esc(g.title)}</div><div class="dd">✎ ${esc(g.authorName)} · ${g.type||"游戏"}</div></div></div>`;
+    }).join("")+`</div>`;
+    const usersHTML=`<div class="grid">`+d.users.map(u=>`<div class="card li" onclick="showUid('${esc(u.uid)}')"><div class="lic">👤</div><div class="lm"><div class="tt">${esc(u.nickname)}</div><div class="dd">@${esc(u.username)} · ${u.vipType!=="none"?"会员":"普通"}</div></div></div>`).join("")+`</div>`;
+    const prodsHTML=`<div class="grid">`+d.products.map(p=>`<div class="card li"><div class="lic">🛒</div><div class="lm"><div class="tt">${esc(p.name)}</div><div class="dd">✎ ${esc(p.sellerName)} · 销量 ${p.sales}</div></div><span class="pp" style="color:#F59E0B;font-weight:800;white-space:nowrap">${p.price} 币</span></div>`).join("")+`</div>`;
+    $("sRes").innerHTML =
+      sec("🎮 游戏", d.counts.games, gamesHTML, "没有匹配的游戏 / 视频") +
+      sec("👤 用户", d.counts.users, usersHTML, "没有匹配的用户") +
+      sec("🛒 商品", d.counts.products, prodsHTML, "没有匹配的商品");
+  }catch(e){$("sRes").innerHTML='<div class="eb">❌ '+esc(e.message)+'</div>'}
+}
+function showUid(uid){alert("用户 UID：\n"+uid+"\n\n可在打赏时使用")}
+
+/* ===== 作品 / 商品 / 视频 数据加载 ===== */
+async function loadWorks(){try{const d=await(await api("/api/works")).json();worksCache=d.list||[]}catch(e){worksCache=[]}}
+async function loadProducts(){try{const d=await(await api("/api/products")).json();productsCache=d.list||[]}catch(e){productsCache=[]}}
+async function loadVideos(){try{const d=await(await api("/api/videos")).json();videosCache=d.list||[]}catch(e){videosCache=[]}}
+async function loadAll(){await Promise.all([loadWorks(),loadProducts(),loadVideos()])}
+
+/* ===== 广场渲染 ===== */
+const wHTML=w=>`<div class="card wc" onclick="loadW('${esc(w.id)}')"><span class="wd" onclick="event.stopPropagation();delW('${esc(w.id)}')">✕</span><h3>${esc(w.title)}</h3><p>${esc(w.desc)}</p><div class="wm"><span>✎ ${esc(w.authorName)} · ${new Date(w.createdAt).toLocaleDateString()}</span><span><span class="tipb" onclick="doTip('${esc(w.uid)}','${esc(w.authorName)}',event)">💛 打赏</span> <span class="tp">H5互动</span></span></div></div>`;
+const pHTML=p=>`<div class="card px"><div class="pi">🛒</div><div class="pm"><div class="pn2">${esc(p.name)}</div><div class="pd2">${esc(p.desc)}</div><div class="pd2">✎ ${esc(p.sellerName)} · 已售 ${p.sales||0}</div></div><div style="text-align:right"><div class="pp">${p.price} <small>币</small></div><div class="buyb" style="margin-top:8px" onclick="buyProduct('${esc(p.id)}')">购买</div></div></div>`;
+const vHTML=v=>{
+  const uid=me?me.uid:"";
+  const liked=(v.likedBy||[]).includes(uid), faved=(v.favedBy||[]).includes(uid);
+  return `<div class="card vc">
+    <div class="vh" onclick="opUrl('${esc(v.url||"")}')"><div class="vt">🎬 ${esc(v.title)}</div><div class="va">✎ ${esc(v.authorName)} · ${new Date(v.createdAt).toLocaleString()}</div></div>
+    <div class="vd">${esc(v.desc)}</div>
+    <div class="vtags">${(v.tags||[]).map(t=>`<span class="tg">#${esc(t)}</span>`).join("")}</div>
+    <div class="vacts">
+      <span class="vb" onclick="vCoin('${esc(v.id)}')">🪙 投币 ${v.coins||0}</span>
+      <span class="vb ${faved?'on':''}" onclick="vFav('${esc(v.id)}')">⭐ 收藏 ${(v.favedBy||[]).length}</span>
+      <span class="vb ${liked?'on':''}" onclick="vLike('${esc(v.id)}')">👍 点赞 ${(v.likedBy||[]).length}</span>
+      <span class="vb" onclick="opUrl('${esc(v.url||"")}')">▶ 播放</span>
+    </div>
+    <div class="vcm">${(v.comments||[]).slice(-3).map(c=>`<div class="cmt"><b>${esc(c.name)}</b>：${esc(c.text)}<span>${new Date(c.time).toLocaleString()}</span></div>`).join("")||'<span style="color:#94A3B8;font-size:11px">还没有留言，说点什么吧</span>'}</div>
+    <div class="cin2"><input id="ci_${esc(v.id)}" placeholder="写留言…" onkeydown="if(event.key==='Enter')vComment('${esc(v.id)}')"><button class="mb pr" onclick="vComment('${esc(v.id)}')">发送</button></div>
+  </div>`;
+};
+function rHome(){$("homeGrid").innerHTML=worksCache.length?worksCache.slice(0,4).map(wHTML).join(""):'<div class="eb">还没有作品，点「＋」造一个吧</div>'}
+function setPT(t){plazaTab=t;rPlaza()}
+function rPlaza(){
+  document.querySelectorAll("#plazaTabs .mtab").forEach(el=>el.classList.toggle("on",el.dataset.tab===plazaTab));
+  const g=$("plazaGrid");
+  if(plazaTab==="game"){g.className="grid";g.innerHTML=worksCache.length?worksCache.map(wHTML).join(""):'<div class="eb">🎮 广场还没有游戏作品</div>'}
+  else if(plazaTab==="product"){g.className="grid";g.innerHTML=productsCache.length?productsCache.map(pHTML).join(""):'<div class="eb">🛒 还没有商品上架</div>'}
+  else{g.className="vgrid";g.innerHTML=videosCache.length?videosCache.map(vHTML).join(""):'<div class="eb">🎬 还没有视频，点右上角发布一个吧</div>'}
+}
+function plazaPublish(){
+  if(plazaTab==="game"){goPage("dream");return}
+  if(plazaTab==="product"){needAuth(()=>{$("pdRes").textContent="";$("pdMask").classList.add("show")});return}
+  needAuth(()=>{$("vdRes").textContent="";$("vdMask").classList.add("show")});
+}
+function loadW(id){const w=worksCache.find(x=>x.id===id);if(!w){alert("作品不存在或已删除");return}curWorkId=w.id;curHtml=w.html;curPrompt=w.desc;goPage("dream");opPrev()}
+async function delW(id){
+  if(!confirm("确定删除这个作品吗？"))return;
+  const d=await(await api("/api/works/"+id,{method:"DELETE"})).json();
+  if(d.ok){await loadWorks();rHome();rPlaza();rMe()}else alert("❌ "+(d.error||"删除失败"));
+}
+
+/* ===== 发布作品 ===== */
+async function publish(){
+  if(!curHtml){aMsg("还没有可发布的作品，先让我帮你造一个吧","a");return}
+  if(!me){needAuth(publish);return}
+  const a=prompt("输入创作者署名（明码展示）：",me.nickname);
+  if(a===null)return;
+  if(curWorkId){clPrev();return}
+  const d=await(await api("/api/works",{method:"POST",body:JSON.stringify({title:curPrompt.slice(0,20)||"未命名梦境",desc:curPrompt,html:curHtml,price:"免费试玩",authorName:a||me.nickname})})).json();
+  if(d.ok){feed("发布了新作品「"+(d.work?d.work.title:curPrompt.slice(0,20))+"」");clPrev();await loadWorks();goPage("plaza")}
+  else alert("❌ "+(d.error||"发布失败"));
+}
+/* 发布商品 */
+async function doPublishProduct(){
+  const name=$("pdN").value.trim(),desc=$("pdD").value.trim(),price=parseInt($("pdP").value)||0;
+  if(!name){$("pdRes").textContent="请填写商品名称";return}
+  if(price<=0){$("pdRes").textContent="价格需为正整数";return}
+  $("pdRes").textContent="发布中…";
+  const d=await(await api("/api/products",{method:"POST",body:JSON.stringify({name,desc,price})})).json();
+  if(d.ok){cm("pdMask");$("pdN").value="";$("pdD").value="";$("pdP").value="";feed("上架了商品「"+name+"」");await loadProducts();plazaTab="product";rPlaza()}
+  else $("pdRes").textContent=d.error;
+}
+/* 购买商品 */
+async function buyProduct(id){
+  if(!me){needAuth(()=>buyProduct(id));return}
+  const p=productsCache.find(x=>x.id===id);if(!p)return;
+  if(!confirm(`确认购买「${p.name}」？\n将支付 ${p.price} 造梦币`))return;
+  const d=await(await api("/api/products/"+id+"/buy",{method:"POST",body:"{}"})).json();
+  if(d.ok){alert("✅ "+d.msg);feed("购买了「"+p.name+"」");await loadProducts();rPlaza();rWallet()}
+  else alert("❌ "+d.error);
+}
+/* 发布视频 */
+async function doPublishVideo(){
+  const title=$("vdT").value.trim(),desc=$("vdD").value.trim(),tags=$("vdG").value.trim(),url=$("vdU").value.trim();
+  if(!title){$("vdRes").textContent="请填写视频标题";return}
+  $("vdRes").textContent="发布中…";
+  const d=await(await api("/api/videos",{method:"POST",body:JSON.stringify({title,desc,tags,url})})).json();
+  if(d.ok){cm("vdMask");$("vdT").value="";$("vdD").value="";$("vdG").value="";$("vdU").value="";feed("发布了视频「"+title+"」");await loadVideos();plazaTab="video";rPlaza()}
+  else $("vdRes").textContent=d.error;
+}
+/* 视频互动 */
+async function vCoin(id){
+  if(!me){needAuth(()=>vCoin(id));return}
+  const a=prompt("投币数量（造梦币）：","10");
+  if(a===null)return;
+  const d=await(await api("/api/videos/"+id+"/coin",{method:"POST",body:JSON.stringify({amount:parseInt(a)||0})})).json();
+  if(d.ok){alert("✅ "+d.msg);await loadVideos();rPlaza();rWallet()}else alert("❌ "+d.error);
+}
+async function vFav(id){
+  if(!me){needAuth(()=>vFav(id));return}
+  const d=await(await api("/api/videos/"+id+"/fav",{method:"POST",body:"{}"})).json();
+  if(d.ok){await loadVideos();rPlaza()}else alert("❌ "+d.error);
+}
+async function vLike(id){
+  if(!me){needAuth(()=>vLike(id));return}
+  const d=await(await api("/api/videos/"+id+"/like",{method:"POST",body:"{}"})).json();
+  if(d.ok){if(d.bonus)alert("🎉 "+d.msg);await loadVideos();rPlaza();rWallet()}else alert("❌ "+d.error);
+}
+async function vComment(id){
+  if(!me){needAuth(()=>vComment(id));return}
+  const inp=$("ci_"+id);if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  const d=await(await api("/api/videos/"+id+"/comment",{method:"POST",body:JSON.stringify({text})})).json();
+  if(d.ok){await loadVideos();rPlaza()}else alert("❌ "+d.error);
+}
+/* 打开视频 / 作品预览 */
+function opUrl(url){
+  if(!url){alert("该视频暂无预览地址");return}
+  $("sandbox").removeAttribute("srcdoc");$("sandbox").src=url;
+  $("pMask").classList.add("show");
+}
+function opPrev(){if(!curHtml)return;$("sandbox").removeAttribute("src");$("sandbox").srcdoc=curHtml;$("pMask").classList.add("show")}
+function clPrev(){$("pMask").classList.remove("show");$("sandbox").removeAttribute("srcdoc");$("sandbox").removeAttribute("src")}
+function pRefresh(){if(curHtml){$("sandbox").removeAttribute("src");$("sandbox").srcdoc=curHtml}}
+function expHtml(){if(!curHtml)return;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([curHtml],{type:"text/html"}));a.download="dream_"+Date.now()+".html";a.click()}
+
+/* ===== 打赏 ===== */
+async function doTip(toUid,toName,ev){if(ev)ev.stopPropagation();
+  if(!me){needAuth(()=>doTip(toUid,toName));return}
+  const a=prompt(`打赏创作者「${toName}」造梦币数量（平台抽成10%）：`,"10");
+  if(a===null)return;
+  const d=await(await api("/api/tip",{method:"POST",body:JSON.stringify({toUid,amount:parseInt(a)||0})})).json();
+  alert(d.ok?("✅ "+d.msg):("❌ "+d.error));rWallet()}
+
+/* ===== 兑换 / 签到 ===== */
+function openRedeem(){$("rdCode").value="";$("rRes").textContent="";$("rMask").classList.add("show")}
+async function doRedeem(){const code=$("rdCode").value.trim();if(!code)return;$("rRes").textContent="兑换中…";
+  const d=await(await api("/api/redeem",{method:"POST",body:JSON.stringify({code})})).json();
+  if(d.ok){$("rRes").textContent="✅ "+d.msg;rWallet();feed("兑换成功："+d.msg);setTimeout(()=>cm("rMask"),1200)}
+  else $("rRes").textContent="❌ "+d.error}
+async function doCheckin(){const d=await(await api("/api/checkin",{method:"POST",body:"{}"})).json();
+  alert(d.ok?("✅ "+d.msg):("❌ "+d.error));rWallet()}
+
+/* ===== AI 对话 ===== */
 const WELCOME=`<div class="cw"><div class="av">🤖</div><div class="h">哈喽 ~ 我是 造梦 AI</div><div class="s">描述你想要的游戏或互动网页，让我们一起创作吧 ~</div></div>`;
 function aMsg(t,w){const d=document.createElement("div");d.className="msg "+w;d.innerHTML=esc(t).replace(/\n/g,"<br>");$("cBody").appendChild(d);$("cBody").scrollTop=1e9;return d}
 function aWork(p){const d=document.createElement("div");d.className="msg a";d.innerHTML=`✦ 作品已生成完毕！<br><span style="font-size:11px;color:#8B8FA3">「${esc(p.slice(0,30))}」已就绪</span><div class="wa"><span class="wb sl" onclick="opPrev()">▶ 立即试玩</span><span class="wb" onclick="publish()">✦ 发布广场</span><span class="wb" onclick="expHtml()">⬇ 导出</span></div>`;$("cBody").appendChild(d);$("cBody").scrollTop=1e9}
-function clearChat(){$("cBody").innerHTML=WELCOME}
+function clearChat(){curWorkId="";$("cBody").innerHTML=WELCOME}
 async function sendMsg(){
   if(busy)return;
   if(!me){needAuth(sendMsg);return}
@@ -539,33 +780,13 @@ async function sendMsg(){
   try{
     const d=await(await api("/api/generate",{method:"POST",body:JSON.stringify(bd)})).json();
     tp.remove();
-    if(d.html){curHtml=d.html;curPrompt=t;aWork(t);feed("用「"+curM().lb+"」创作了「"+t.slice(0,20)+"」");rWallet()}
+    if(d.html){curHtml=d.html;curPrompt=t;curWorkId="";aWork(t);feed("用「"+curM().lb+"」创作了「"+t.slice(0,20)+"」");rWallet()}
     else aMsg(d.error?("❌ "+d.error):(d.text||"（没有回复，换个说法试试）"),"a");
   }catch(e){tp.remove();aMsg("❌ "+e.message,"a")}
   busy=false;$("sBtn").disabled=false;
 }
 
-/* 兑换/签到/打赏 */
-function openRedeem(){$("rdCode").value="";$("rRes").textContent="";$("rMask").classList.add("show")}
-async function doRedeem(){const code=$("rdCode").value.trim();if(!code)return;$("rRes").textContent="兑换中…";
-  const d=await(await api("/api/redeem",{method:"POST",body:JSON.stringify({code})})).json();
-  if(d.ok){$("rRes").textContent="✅ "+d.msg;rWallet();feed("兑换成功："+d.msg);setTimeout(()=>cm("rMask"),1200)}
-  else $("rRes").textContent="❌ "+d.error}
-async function doCheckin(){const d=await(await api("/api/checkin",{method:"POST",body:"{}"})).json();
-  alert(d.ok?("✅ "+d.msg):("❌ "+d.error));rWallet()}
-async function doTip(toUid,toName,ev){ev.stopPropagation();
-  const a=prompt(`打赏创作者「${toName}」造梦币数量（平台抽成10%）：`,"10");
-  if(a===null)return;
-  const d=await(await api("/api/tip",{method:"POST",body:JSON.stringify({toUid,amount:parseInt(a)})})).json();
-  alert(d.ok?("✅ "+d.msg):("❌ "+d.error));rWallet()}
-
-/* 沙盒 */
-function opPrev(){if(!curHtml)return;$("sandbox").srcdoc=curHtml;$("pMask").classList.add("show")}
-function clPrev(){$("pMask").classList.remove("show")}
-function pRefresh(){if(curHtml)$("sandbox").srcdoc=curHtml}
-function expHtml(){if(!curHtml)return;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([curHtml],{type:"text/html"}));a.download="dream_"+Date.now()+".html";a.click()}
-
-/* 个人资料（本地外观缓存，昵称走服务端） */
+/* ===== 个人资料 ===== */
 const DP={bio:"啥也木有",avatar:""};
 const prof=()=>Object.assign({},DP,LS("dm_pf",{}));
 function rPf(){const p=prof();$("pbT").textContent=p.bio;
@@ -578,7 +799,7 @@ async function rename(){const n=prompt("修改昵称：",me?me.nickname:"");if(n
   if(d.ok){me.nickname=d.nickname;syncUI();feed("修改昵称为「"+d.nickname+"」")}else alert("❌ "+(d.error||"修改失败"))}
 function edBio(){const p=prof(),n=prompt("修改简介：",p.bio);if(n===null)return;p.bio=n.trim().slice(0,120)||"啥也木有";SV("dm_pf",p);rPf();feed("更新了个人简介")}
 
-/* 头像 1:1 裁剪 */
+/* ===== 头像裁剪 ===== */
 let crImg=null,crX=0,crY=0,crScale=1,crBase=1,dragging=false,dx=0,dy=0;
 const BOX=280;
 function chgAv(){$("avFile").click()}
@@ -602,27 +823,24 @@ window.addEventListener("touchend",()=>dragging=false);
 function clampCrop(){const s=crBase*crScale,w=crImg.width*s,h=crImg.height*s;crX=Math.min(w/2-BOX/2,Math.max(BOX/2-w/2,crX));crY=Math.min(h/2-BOX/2,Math.max(BOX/2-h/2,crY))}
 function applyCrop(){const S=256,c=document.createElement("canvas");c.width=c.height=S;const ctx=c.getContext("2d");const s=crBase*crScale,k=S/BOX,w=crImg.width*s*k,h=crImg.height*s*k;ctx.drawImage(crImg,S/2-w/2+crX*k,S/2-h/2+crY*k,w,h);const p=prof();p.avatar=c.toDataURL("image/jpeg",.85);SV("dm_pf",p);rPf();feed("更换了头像");cm("crMask")}
 
-/* 作品 */
-const works=()=>LS("dm_works",[]);
-function publish(){
-  if(!curHtml){aMsg("还没有可发布的作品，先让我帮你造一个吧","a");return}
-  const a=prompt("输入创作者署名（明码展示）：",me?me.nickname:"匿名");if(a===null)return;
-  const w=works();w.unshift({id:Date.now(),uid:me?me.uid:"",title:curPrompt.slice(0,20)||"未命名梦境",desc:curPrompt,author:a||"匿名造梦师",price:"免费试玩",html:curHtml,time:new Date().toLocaleString()});
-  SV("dm_works",w);feed("发布了新作品「"+w[0].title+"」");clPrev();goPage("plaza");
-}
-const wHTML=w=>`<div class="card wc" onclick="loadW(${w.id})"><span class="wd" onclick="event.stopPropagation();delW(${w.id})">✕</span><h3>${esc(w.title)}</h3><p>${esc(w.desc)}</p><div class="wm"><span>✎ ${esc(w.author)} · ${w.time.slice(0,10)}</span><span><span class="tipb" onclick="doTip('${w.uid||""}','${esc(w.author)}',event)">💛 打赏</span> <span class="tp">H5互动</span></span></div></div>`;
-const rHome=()=>{const w=works();$("homeGrid").innerHTML=w.length?w.slice(0,4).map(wHTML).join(""):'<div class="eb">还没有作品，点「＋」造一个吧</div>'};
-const rPlaza=()=>{const w=works();$("plazaGrid").innerHTML=w.length?w.map(wHTML).join(""):'<div class="eb">🌌 广场空空如也，快造出第一个梦境并发布吧</div>'};
-function loadW(id){const w=works().find(x=>x.id===id);if(!w)return;curHtml=w.html;curPrompt=w.desc;goPage("dream");opPrev()}
-function delW(id){SV("dm_works",works().filter(x=>x.id!==id));rPlaza();rHome();rMe()}
+/* ===== 动态 ===== */
 const feeds=()=>LS("dm_feed",[]);
 function feed(t){const f=feeds();f.unshift({t,time:new Date().toLocaleString()});SV("dm_feed",f.slice(0,50))}
-function rMe(){const w=works(),f=feeds();$("stW").textContent=w.length;$("stF").textContent=f.length;rPf();const b=$("meBody");
-  if(meT===0)b.innerHTML=w.length?w.map(x=>`<div class="card li" onclick="loadW(${x.id})"><div class="lic">🎮</div><div class="lm"><div class="tt">${esc(x.title)}</div><div class="dd">✎ ${esc(x.author)} · ${x.time.slice(0,10)}</div></div><div class="lr">${x.price} ›</div></div>`).join(""):'<div class="eb">还没有作品，点「＋」找造梦 AI 创作吧</div>';
-  else if(meT===1)b.innerHTML='<div class="eb">🛒 商品货架筹备中 · 所有上架作品将明码标价</div>';
-  else b.innerHTML=f.length?f.map(x=>`<div class="card li"><div class="lic">✦</div><div class="lm"><div class="tt">${esc(x.t)}</div><div class="dd">${x.time}</div></div></div>`).join(""):'<div class="eb">暂无动态</div>'}
+function rMe(){
+  const f=feeds();
+  const mine=me?worksCache.filter(w=>w.uid===me.uid):[];
+  $("stW").textContent=mine.length;$("stF").textContent=f.length;rPf();
+  const b=$("meBody");
+  if(meT===0)b.innerHTML=mine.length?mine.map(x=>`<div class="card li" onclick="loadW('${esc(x.id)}')"><div class="lic">🎮</div><div class="lm"><div class="tt">${esc(x.title)}</div><div class="dd">✎ ${esc(x.authorName)} · ${new Date(x.createdAt).toLocaleDateString()}</div></div><div class="lr">${esc(x.price)} ›</div></div>`).join(""):'<div class="eb">还没有作品，点「＋」找造梦 AI 创作吧</div>';
+  else if(meT===1){
+    const mineP=me?productsCache.filter(p=>p.uid===me.uid):[];
+    b.innerHTML=(mineP.length?mineP.map(p=>`<div class="card li"><div class="lic">🛒</div><div class="lm"><div class="tt">${esc(p.name)}</div><div class="dd">${p.price} 造梦币 · 已售 ${p.sales||0}</div></div></div>`).join(""):'<div class="eb">你还没有上架商品</div>')+
+      `<div class="mbt"><button class="mb pr" onclick="needAuth(()=>{cm('pdMask');\$('pdRes').textContent='';})||0" style="flex:1">＋ 发布新商品</button></div>`;
+  }
+  else b.innerHTML=f.length?f.map(x=>`<div class="card li"><div class="lic">✦</div><div class="lm"><div class="tt">${esc(x.t)}</div><div class="dd">${x.time}</div></div></div>`).join(""):'<div class="eb">暂无动态</div>';
+}
 
-/* 卡密库存看板 */
+/* ===== 卡密库存看板 ===== */
 const TIER_NAME={JF100:"100积分",JF500:"500积分",ZM1K:"1000造梦币",VIPJF:"积分大会员月卡",VIPZM:"站点大会员月卡",GENPT:"动态积分",GENCN:"动态造梦币",GENPY:"动态积分年卡",LEGACY:"旧版卡"};
 async function loadCards(){
   $("cardBoard").innerHTML='<span style="color:#94A3B8">加载中…</span>';
@@ -635,7 +853,7 @@ async function loadCards(){
   }catch(e){$("cardBoard").innerHTML="❌ "+e.message}
 }
 
-/* 主理人 */
+/* ===== 主理人 ===== */
 function openCfg(){if(admT){$("cfB").value=localStorage.getItem("dm_base")||"";$("cfM").value=localStorage.getItem("dm_model")||"";$("tRes").textContent="";$("cMask").classList.add("show");loadCards();return}
   $("aTk").value="";$("lRes").textContent="";$("lMask").classList.add("show");setTimeout(()=>$("aTk").focus(),100)}
 async function verAdm(){const t=$("aTk").value.trim();if(!t){$("lRes").textContent="请输入口令";return}$("lRes").textContent="验证中…";
@@ -651,7 +869,7 @@ async function genCodes(){
   if(d.error){alert("❌ "+d.error);return}
   $("gcOut").style.display="block";$("gcOut").textContent=d.codes.join("\n");loadCards()}
 
-/* 启动 */
+/* ===== 启动 ===== */
 $("cBody").innerHTML=WELCOME;
 rPf();rMT();restore();chkSt();setInterval(chkSt,30000);
 </script>
