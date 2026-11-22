@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>造梦空间站 · 源光工坊</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#1E293B;overflow:hidden}
+body{background:linear-gradient(160deg,#EFF6FF,#DBEAFE 60%,#E0F2FE)}
+.blob{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob::before,.blob::after{content:"";position:absolute;width:90vmax;height:90vmax;border-radius:50%;filter:blur(70px);opacity:.5}
+.blob::before{background:radial-gradient(circle,#BFDBFE,transparent 60%);top:-30vmax;left:-20vmax;animation:d1 26s ease-in-out infinite alternate}
+.blob::after{background:radial-gradient(circle,#93C5FD,transparent 55%);bottom:-35vmax;right:-25vmax;opacity:.4;animation:d2 32s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(10vmax,6vmax) scale(1.12)}}
+@keyframes d2{to{transform:translate(-8vmax,-10vmax) scale(1.08)}}
+.card{background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border:1px solid rgba(59,130,246,.25);border-radius:14px;box-shadow:0 2px 12px rgba(59,130,246,.08)}
+.glow{background:linear-gradient(90deg,#2563EB,#60A5FA,#1D4ED8,#3B82F6);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:tf 6s linear infinite}
+@keyframes tf{to{background-position:300% 0}}
+header{position:relative;z-index:10;height:52px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid rgba(59,130,246,.2);background:rgba(255,255,255,.85);backdrop-filter:blur(12px)}
+.logo{font-size:18px;font-weight:800;white-space:nowrap}
+.pill{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748B;padding:3px 9px;border-radius:20px;border:1px solid rgba(59,130,246,.25);background:rgba(219,234,254,.5)}
+.dot{width:7px;height:7px;border-radius:50%;background:#94A3B8}
+.dot.on{background:#3B82F6;box-shadow:0 0 8px #3B82F6;animation:pu 1.8s infinite}
+.dot.err{background:#EF4444}
+@keyframes pu{50%{opacity:.5}}
+.sp{flex:1}
+.ibtn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#3B82F6;cursor:pointer;border-radius:10px;border:1px solid rgba(59,130,246,.3);background:rgba(219,234,254,.5)}
+.page{position:relative;z-index:5;height:calc(100% - 52px - 58px);overflow-y:auto;display:none}
+.page.show{display:block}
+#pgDream.show{display:flex}
+#pgHome,#pgPlaza{padding:14px}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sh .t{font-size:17px;font-weight:700}
+.sh .s{font-size:11px;color:#94A3B8}
+.eb{text-align:center;color:#94A3B8;padding:60px 0;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.wc{padding:16px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.wc::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% -20%,rgba(147,197,253,.4),transparent 60%)}
+.wc:hover{transform:translateY(-3px);border-color:#3B82F6;box-shadow:0 8px 26px rgba(59,130,246,.25)}
+.wc h3{font-size:15px;margin-bottom:6px}
+.wc p{font-size:12px;color:#64748B;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wm{display:flex;justify-content:space-between;font-size:11px;color:#94A3B8}
+.wm .tp{color:#2563EB;border:1px solid rgba(59,130,246,.4);padding:1px 8px;border-radius:10px}
+.wd{position:absolute;top:10px;right:10px;font-size:12px;color:#94A3B8;cursor:pointer;z-index:2;padding:2px 6px}
+.wd:hover{color:#EF4444}
+/* AI 对话页 */
+#pgDream{padding:0;flex-direction:column;background:#0B0B0F}
+.chead{height:56px;display:flex;align-items:center;padding:0 14px;gap:10px;background:#101014;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.cback{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#9CA3AF;cursor:pointer;border-radius:8px}
+.ctitle{flex:1;text-align:center;min-width:0}
+.cname{font-size:15px;font-weight:700;color:#F3F4F6}
+.cname i{font-style:normal;font-size:9px;color:#fff;background:linear-gradient(90deg,#F59E0B,#FBBF24);padding:1px 5px;border-radius:4px;vertical-align:middle;margin-left:4px}
+.cmline{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:2px}
+.cm{font-size:10px;color:#8B8FA3;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmset{font-size:11px;color:#6B7280;cursor:pointer;padding:1px 4px;border-radius:5px;border:1px solid rgba(255,255,255,.12)}
+.cico{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9CA3AF;cursor:pointer;border-radius:8px}
+.sync{font-size:11px;color:#6B7280;padding:6px 14px;background:#101014;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.sync b{display:inline-block;animation:sp 1.4s linear infinite;font-weight:400}
+@keyframes sp{to{transform:rotate(360deg)}}
+.cbody{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:14px}
+.cw{text-align:center;padding:30px 0 10px}
+.cw .av{width:76px;height:76px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;background:radial-gradient(circle at 35% 30%,#E0E7FF,#818CF8 60%,#4F46E5);box-shadow:0 0 26px rgba(129,140,248,.45)}
+.cw .h{font-size:16px;font-weight:700;color:#F3F4F6;margin-bottom:6px}
+.cw .s{font-size:13px;color:#8B8FA3}
+.msg{max-width:82%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.7;word-break:break-word}
+.msg.u{align-self:flex-end;background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:#1B1B22;color:#E5E7EB;border:1px solid rgba(255,255,255,.07);border-bottom-left-radius:4px}
+.msg .wa{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.wb{padding:7px 12px;font-size:12px;color:#C7D2FE;cursor:pointer;border-radius:8px;background:rgba(79,70,229,.25);border:1px solid rgba(129,140,248,.4)}
+.wb.sl{background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff}
+.msg.tp{align-self:flex-start;color:#8B8FA3;font-style:italic}
+.cin{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 12px 14px;background:#101014;border-top:1px solid rgba(255,255,255,.08)}
+.cin input{flex:1;padding:12px 16px;font-size:14px;color:#F3F4F6;background:#1B1B22;border:1px solid rgba(255,255,255,.1);border-radius:24px;outline:none}
+.cin input:focus{border-color:#6366F1}
+.cin input::placeholder{color:#5B5E6E}
+.sbtn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;font-size:17px;color:#fff;background:linear-gradient(135deg,#4F46E5,#6366F1);box-shadow:0 0 14px rgba(99,102,241,.5);flex-shrink:0}
+.sbtn:disabled{opacity:.4}
+.cred{font-size:10px;color:#FBBF24;white-space:nowrap;cursor:pointer;padding:4px 8px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.08)}
+/* 沙盒浮层 */
+.pmask{position:fixed;inset:0;z-index:60;background:#0B0B0F;display:none;flex-direction:column}
+.pmask.show{display:flex}
+.ptop{height:50px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#101014;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.ptop .tt{flex:1;font-size:13px;color:#9CA3AF;text-align:center}
+.pb{padding:7px 12px;font-size:12px;color:#C7D2FE;cursor:pointer;border-radius:8px;background:rgba(79,70,229,.25);border:1px solid rgba(129,140,248,.4)}
+.pmask iframe{flex:1;border:none;background:#fff}
+/* 我的页 */
+#pgMe{padding:0}
+.phead{padding:22px 18px 0;background:linear-gradient(180deg,rgba(147,197,253,.4),transparent);border-bottom:1px solid rgba(59,130,246,.15)}
+.pt{display:flex;align-items:center;gap:14px}
+.pav{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;background:radial-gradient(circle at 30% 30%,#60A5FA,#2563EB);border:2px solid rgba(59,130,246,.4);flex-shrink:0;overflow:hidden;cursor:pointer;position:relative}
+.pav img{width:100%;height:100%;object-fit:cover}
+.pav .cam{position:absolute;bottom:0;left:0;right:0;background:rgba(37,99,235,.7);color:#fff;font-size:9px;text-align:center}
+.pn{font-size:17px;font-weight:700;cursor:pointer}
+.pn .e{font-size:11px;color:#3B82F6;font-weight:400;margin-left:6px}
+.pbd{font-size:10px;color:#fff;background:linear-gradient(90deg,#2563EB,#60A5FA);padding:1px 7px;border-radius:8px;vertical-align:middle;margin-left:6px}
+.pid{font-size:11px;color:#94A3B8;margin-top:3px}
+.pb2{font-size:12px;color:#64748B;line-height:1.7;margin:12px 0}
+.pst{display:flex;justify-content:space-around;padding:10px 0 0}
+.pst div{text-align:center}
+.pst b{font-size:17px;display:block}
+.pst span{font-size:11px;color:#94A3B8}
+.mtabs{display:flex;border-top:1px solid rgba(59,130,246,.15);margin-top:8px}
+.mtab{flex:1;text-align:center;padding:12px 0;font-size:14px;color:#94A3B8;cursor:pointer;position:relative}
+.mtab.on{color:#2563EB;font-weight:600}
+.mtab.on::after{content:"";position:absolute;bottom:0;left:30%;right:30%;height:2px;background:linear-gradient(90deg,#2563EB,#60A5FA)}
+.mbody{padding:14px}
+.li{display:flex;align-items:center;gap:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer}
+.li:hover{border-color:#3B82F6}
+.lic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:radial-gradient(circle at 30% 30%,#BFDBFE,#93C5FD);border:1px solid rgba(59,130,246,.3);flex-shrink:0}
+.lm{flex:1;min-width:0}
+.lm .tt{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lm .dd{font-size:11px;color:#94A3B8;margin-top:3px}
+.lr{font-size:14px;color:#2563EB;font-weight:600;white-space:nowrap}
+/* 底部导航 */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:40;height:58px;display:flex;align-items:center;justify-content:space-around;border-top:1px solid rgba(59,130,246,.2);background:rgba(255,255,255,.95);backdrop-filter:blur(12px)}
+.bi{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#94A3B8;cursor:pointer;padding:4px 10px;flex:1}
+.bi .ic{font-size:20px;filter:grayscale(.7);opacity:.7}
+.bi.on{color:#2563EB}
+.bi.on .ic{filter:none;opacity:1}
+.bc{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;background:linear-gradient(135deg,#2563EB,#60A5FA);box-shadow:0 4px 16px rgba(59,130,246,.5);margin-top:-14px;flex-shrink:0}
+.bc.on{box-shadow:0 0 0 3px rgba(147,197,253,.5),0 4px 16px rgba(59,130,246,.6)}
+/* 弹窗 */
+.mmask{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.45);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.mmask.show{display:flex}
+.modal{width:100%;max-width:420px;padding:22px;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:16px;margin-bottom:14px}
+.fd{margin-bottom:13px}
+.fd label{display:block;font-size:12px;color:#64748B;margin-bottom:6px}
+.fd input{width:100%;padding:10px 12px;font-size:14px;color:#1E293B;background:rgba(255,255,255,.9);border:1px solid rgba(59,130,246,.3);border-radius:8px;outline:none}
+.mbt{display:flex;gap:10px;margin-top:16px}
+.mbt .mb{flex:1;padding:10px;font-size:14px;text-align:center}
+.mb{padding:6px 11px;font-size:12px;color:#1D4ED8;cursor:pointer;border-radius:7px;background:rgba(219,234,254,.6);border:1px solid rgba(59,130,246,.3)}
+.mb.pr{background:linear-gradient(135deg,#2563EB,#3B82F6);color:#fff}
+.tr{font-size:12px;margin-top:10px;min-height:18px;color:#64748B}
+.lt{font-size:12px;color:#94A3B8;line-height:1.7;margin-bottom:12px}
+.mi{display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:10px;border-radius:12px;border:1px solid rgba(59,130,246,.25);background:rgba(255,255,255,.7);cursor:pointer}
+.mi.sel{border-color:#2563EB;background:rgba(219,234,254,.7);box-shadow:0 0 0 2px rgba(59,130,246,.25)}
+.mi .mif{flex:1;min-width:0}
+.mi .mn{font-size:14px;font-weight:600}
+.mi .md{font-size:11px;color:#94A3B8;margin-top:3px}
+.mi .co{font-size:13px;font-weight:700;color:#F59E0B;white-space:nowrap}
+.mi .tk{font-size:14px;color:#2563EB;width:18px;text-align:center}
+/* 头像裁剪器（1:1） */
+.cropbox{width:280px;height:280px;margin:0 auto;border-radius:12px;overflow:hidden;position:relative;background:#0f172a;touch-action:none;cursor:grab;border:2px solid rgba(59,130,246,.4)}
+.cropbox:active{cursor:grabbing}
+.cropbox img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.cropbox::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(2,6,23,.55);pointer-events:none}
+.cropbox .ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(255,255,255,.7);pointer-events:none;z-index:2}
+.zoomrow{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12px;color:#64748B}
+.zoomrow input{flex:1;accent-color:#2563EB}
+</style>
+</head>
+<body>
+<div class="blob"></div>
+<header>
+  <div class="logo glow">造梦空间站</div>
+  <div class="pill"><span class="dot" id="sDot"></span><span id="sTxt">检测中…</span></div>
+  <div class="sp"></div>
+  <button class="ibtn" title="API 通道配置（主理人）" onclick="openCfg()">⚙</button>
+</header>
+
+<!-- 首页 -->
+<div class="page show" id="pgHome">
+  <div class="sh"><span class="t glow">欢迎来到造梦空间站</span></div>
+  <div class="card" style="padding:24px;text-align:center;margin-bottom:14px">
+    <div style="font-size:40px;margin-bottom:10px">🚀</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:8px">源光工坊 · H5 创作者平台</div>
+    <div style="font-size:13px;color:#64748B;line-height:1.8">与造梦 AI 对话，把一句话变成可以玩的小游戏<br>点击底部中央的「＋」开始创作</div>
+    <button class="mb pr" style="margin-top:14px;padding:10px 26px;font-size:14px" onclick="goPage('dream')">✦ 进入 AI 造梦</button>
+  </div>
+  <div class="sh"><span class="t">热门作品</span><span class="s">· 来自造梦广场</span></div>
+  <div class="grid" id="homeGrid"></div>
+</div>
+
+<!-- AI 对话页 -->
+<div class="page" id="pgDream">
+  <div class="chead">
+    <div class="cback" onclick="goPage('home')">✕</div>
+    <div class="ctitle">
+      <div class="cname">造梦 AI<i>AI</i></div>
+      <div class="cmline"><span class="cm" id="cmTxt">当前模型：Gemini 快速 · 5积分/次</span><span class="cmset" onclick="openMP()">⚙</span></div>
+    </div>
+    <div class="cico" onclick="clearChat()">🗑</div>
+  </div>
+  <div class="sync"><b>↻</b> 已连接造梦引擎 · 对话作品可一键试玩发布</div>
+  <div class="cbody" id="cBody"></div>
+  <div class="cin">
+    <span class="cred" id="credPill" onclick="openMP()">💰 100</span>
+    <input id="cIn" placeholder="给 造梦 AI 发消息…" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="sbtn" id="sBtn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- 沙盒浮层 -->
+<div class="pmask" id="pMask">
+  <div class="ptop">
+    <span class="pb" onclick="clPrev()">‹ 返回对话</span>
+    <span class="tt">沙盒试玩中</span>
+    <span class="pb" onclick="pRefresh()">↻</span>
+    <span class="pb" onclick="publish()">发布</span>
+  </div>
+  <iframe id="sandbox" sandbox="allow-scripts" title="沙盒预览"></iframe>
+</div>
+
+<!-- 广场页 -->
+<div class="page" id="pgPlaza">
+  <div class="sh"><span class="t glow">造梦广场</span><span class="s">· 明码标价 · 点击卡片即刻试玩</span></div>
+  <div class="grid" id="plazaGrid"></div>
+</div>
+
+<!-- 我的页 -->
+<div class="page" id="pgMe">
+  <div class="phead">
+    <div class="pt">
+      <div class="pav" id="pAv" onclick="chgAv()"><span id="avEm">✦</span><div class="cam">换头像</div></div>
+      <div>
+        <div class="pn" onclick="rename()"><span id="pnT">源光工坊</span><span class="e">✎ 改名</span><span class="pbd">主理人</span></div>
+        <div class="pid">ID: 42292212 · 造梦空间站主站</div>
+      </div>
+    </div>
+    <div class="pb2" onclick="edBio()"><span id="pbT">专注极简美学与二次元硬核研发。承诺所有作品明码标价，真投入，绝不暗改概率。</span> <span style="color:#3B82F6;font-size:11px">✎</span></div>
+    <div class="pst"><div><b id="stW">0</b><span>作品</span></div><div><b>0</b><span>商品</span></div><div><b id="stF">0</b><span>动态</span></div></div>
+    <div class="mtabs">
+      <div class="mtab on" onclick="setMT(0,this)">作品</div>
+      <div class="mtab" onclick="setMT(1,this)">商品</div>
+      <div class="mtab" onclick="setMT(2,this)">动态</div>
+    </div>
+  </div>
+  <div class="mbody" id="meBody"></div>
+  <input type="file" id="avFile" accept="image/*" style="display:none">
+</div>
+
+<!-- 底部导航 -->
+<nav class="bnav">
+  <div class="bi on" id="bnHome" onclick="goPage('home')"><span class="ic">🏠</span>首页</div>
+  <div class="bi" id="bnPlaza" onclick="goPage('plaza')"><span class="ic">🌌</span>广场</div>
+  <div class="bc" id="bnDream" onclick="goPage('dream')">＋</div>
+  <div class="bi" onclick="openCfg()"><span class="ic">⚙</span>通道</div>
+  <div class="bi" id="bnMe" onclick="goPage('me')"><span class="ic">👤</span>我的</div>
+</nav>
+
+<!-- 头像裁剪弹窗（强制 1:1） -->
+<div class="mmask" id="crMask">
+  <div class="card modal" style="max-width:340px">
+    <h2 class="glow">✂ 裁剪头像（1 : 1）</h2>
+    <div class="cropbox" id="cropBox">
+      <img id="cropImg" alt="">
+      <div class="ring"></div>
+    </div>
+    <div class="zoomrow">🔍 缩放<input type="range" id="crZoom" min="100" max="300" value="100"></div>
+    <div class="lt" style="margin-top:8px;text-align:center">拖动图片调整位置，圆圈内即为最终头像</div>
+    <div class="mbt">
+      <button class="mb" onclick="cm('crMask')">取消</button>
+      <button class="mb pr" onclick="applyCrop()">✓ 确定使用</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模型弹窗 -->
+<div class="mmask" id="mMask">
+  <div class="card modal">
+    <h2 class="glow">✦ 选择造梦模型 <span style="font-size:11px;color:#94A3B8" id="mCr"></span></h2>
+    <div id="mList"></div>
+    <div class="lt">💡 明码标价：不同档位消耗积分与代码规模上限不同，生成即扣费。</div>
+    <div class="mbt"><button class="mb pr" onclick="cm('mMask')">完成</button></div>
+  </div>
+</div>
+
+<!-- 口令弹窗 -->
+<div class="mmask" id="lMask">
+  <div class="card modal">
+    <h2 class="glow">🛡 主理人权限验证</h2>
+    <div class="lt">API 通道配置仅对空间站主理人开放。普通访客可正常造梦与逛广场。</div>
+    <div class="fd"><label>主理人口令</label><input id="aTk" type="password" placeholder="输入管理口令" onkeydown="if(event.key==='Enter')verAdm()"></div>
+    <div class="tr" id="lRes"></div>
+    <div class="mbt"><button class="mb" onclick="cm('lMask')">取消</button><button class="mb pr" onclick="verAdm()">验证身份</button></div>
+  </div>
+</div>
+
+<!-- 通道配置弹窗 -->
+<div class="mmask" id="cMask">
+  <div class="card modal">
+    <h2 class="glow">⚙ API 通道配置 <span style="font-size:11px;color:#2563EB">主理人模式</span></h2>
+    <div class="fd"><label>接口地址 Base URL（OpenAI 兼容）</label><input id="cfB" placeholder="留空 = 服务端默认通道"></div>
+    <div class="fd"><label>模型名称（覆写所有档位）</label><input id="cfM" placeholder="留空 = 按档位映射"></div>
+    <div class="lt">🔒 API Key 只存于服务端环境变量，此处无需也无法填写。</div>
+    <div class="tr" id="tRes"></div>
+    <div class="mbt"><button class="mb" onclick="testCh()">⚡ 测试连通</button><button class="mb pr" onclick="saveCfg()">✓ 保存关闭</button></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let curHtml="",curPrompt="",admT=sessionStorage.getItem("dm_admin")||"",busy=false,meT=0;
+const MD=[
+{id:"basic",n:"平民版 · Gemini 驱动",lb:"Gemini 快速",c:5,d:"限40行代码，仅基础逻辑"},
+{id:"gpt4",n:"ChatGPT 4",lb:"ChatGPT 4",c:10,d:"均衡创作，功能完整"},
+{id:"opus45",n:"Opus 4.5",lb:"Opus 4.5",c:13,d:"进阶逻辑与手感"},
+{id:"pro",n:"高级版 · ChatGPT 5 驱动",lb:"ChatGPT 5 高级",c:15,d:"限150行代码，含完整UI/动画"},
+{id:"ultra",n:"终极版 · Opus 5.5 驱动",lb:"Opus 5.5 终极",c:20,d:"200–300行，含复杂物理引擎"}];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cm=id=>$(id).classList.remove("show");
+const LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+document.querySelectorAll(".mmask").forEach(m=>m.addEventListener("click",e=>{if(e.target===m&&m.id!=="crMask")m.classList.remove("show")}));
+
+/* 模型/积分 */
+const curM=()=>MD.find(m=>m.id===(localStorage.getItem("dm_mid")||"basic"))||MD[0];
+const getCr=()=>{const c=parseInt(localStorage.getItem("dm_cr"));return isNaN(c)?100:c};
+const setCr=c=>{localStorage.setItem("dm_cr",Math.max(0,c));$("credPill").textContent="💰 "+getCr()};
+const rMT=()=>{const m=curM();$("cmTxt").textContent="当前模型："+m.lb+" · "+m.c+"积分/次"};
+function openMP(){$("mCr").textContent="｜余额 "+getCr()+" 积分";$("mList").innerHTML=MD.map(m=>`<div class="mi ${m.id===curM().id?'sel':''}" onclick="localStorage.setItem('dm_mid','${m.id}');rMT();openMP()"><div class="mif"><div class="mn">${m.n}</div><div class="md">${m.d}</div></div><div class="co">${m.c} 积分/次</div><div class="tk">${m.id===curM().id?'✓':''}</div></div>`).join("");$("mMask").classList.add("show")}
+
+/* 页面切换 */
+const PM={home:"pgHome",plaza:"pgPlaza",me:"pgMe",dream:"pgDream"};
+function goPage(p){
+  Object.values(PM).forEach(id=>$(id).classList.remove("show"));
+  $(PM[p]).classList.add("show");
+  ["Home","Plaza","Me"].forEach(k=>$("bn"+k).classList.toggle("on",k.toLowerCase()===p));
+  $("bnDream").classList.toggle("on",p==="dream");
+  if(p==="home")rHome();if(p==="plaza")rPlaza();if(p==="me")rMe();
+  if(p==="dream")setTimeout(()=>$("cIn").focus(),200);
+}
+function setMT(i,el){meT=i;document.querySelectorAll(".mtab").forEach(t=>t.classList.remove("on"));el.classList.add("on");rMe()}
+
+/* 状态 */
+async function chkSt(){try{const r=await fetch("/api/status"),d=await r.json();$("sDot").className="dot"+(d.keyConfigured?" on":" err");$("sTxt").textContent=d.keyConfigured?"引擎在线":"引擎在线 · 未配密钥"}catch(e){$("sDot").className="dot err";$("sTxt").textContent="后端离线"}}
+
+/* 对话 */
+const WELCOME=`<div class="cw"><div class="av">🤖</div><div class="h">哈喽 ~ 我是 造梦 AI</div><div class="s">描述你想要的游戏或互动网页，让我们一起创作吧 ~</div></div>`;
+function aMsg(t,w){const d=document.createElement("div");d.className="msg "+w;d.innerHTML=esc(t).replace(/\n/g,"<br>");$("cBody").appendChild(d);$("cBody").scrollTop=1e9;return d}
+function aWork(p){const d=document.createElement("div");d.className="msg a";d.innerHTML=`✦ 作品已生成完毕！<br><span style="font-size:11px;color:#8B8FA3">「${esc(p.slice(0,30))}」已就绪</span><div class="wa"><span class="wb sl" onclick="opPrev()">▶ 立即试玩</span><span class="wb" onclick="publish()">✦ 发布广场</span><span class="wb" onclick="expHtml()">⬇ 导出</span></div>`;$("cBody").appendChild(d);$("cBody").scrollTop=1e9}
+function clearChat(){$("cBody").innerHTML=WELCOME}
+async function sendMsg(){
+  if(busy)return;const t=$("cIn").value.trim();if(!t)return;
+  const m=curM();
+  if(getCr()<m.c){aMsg(`积分不足：${m.n} 需要 ${m.c} 积分/次，当前余额 ${getCr()}。请切换更低档位。`,"a");return}
+  $("cIn").value="";busy=true;$("sBtn").disabled=true;
+  aMsg(t,"u");const tp=aMsg("造梦 AI 正在创作中…","a tp");
+  const hd={"Content-Type":"application/json"},bd={prompt:t,modelId:m.id};
+  if(admT){hd["x-admin-token"]=admT;const b=localStorage.getItem("dm_base"),mo=localStorage.getItem("dm_model");if(b)bd.baseUrl=b;if(mo)bd.model=mo}
+  try{
+    const r=await fetch("/api/generate",{method:"POST",headers:hd,body:JSON.stringify(bd)}),d=await r.json();
+    tp.remove();if(!r.ok)throw new Error(d.error||"生成失败");
+    if(d.html){setCr(getCr()-m.c);curHtml=d.html;curPrompt=t;aWork(t);feed("用「"+m.lb+"」创作了「"+t.slice(0,20)+"」")}
+    else aMsg(d.text||"（暂时没有回复，换个说法试试）","a");
+  }catch(e){tp.remove();aMsg("❌ "+e.message,"a")}
+  busy=false;$("sBtn").disabled=false;
+}
+
+/* 沙盒 */
+function opPrev(){if(!curHtml)return;$("sandbox").srcdoc=curHtml;$("pMask").classList.add("show")}
+function clPrev(){$("pMask").classList.remove("show")}
+function pRefresh(){if(curHtml)$("sandbox").srcdoc=curHtml}
+function expHtml(){if(!curHtml)return;const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([curHtml],{type:"text/html"}));a.download="dream_"+Date.now()+".html";a.click()}
+
+/* 个人资料 */
+const DP={name:"源光工坊",bio:"专注极简美学与二次元硬核研发。承诺所有作品明码标价，真投入，绝不暗改概率。",avatar:""};
+const prof=()=>Object.assign({},DP,LS("dm_pf",{}));
+function rPf(){const p=prof();$("pnT").textContent=p.name;$("pbT").textContent=p.bio;
+  const im=$("pAv").querySelector("img");
+  if(p.avatar){$("avEm").style.display="none";if(!im){const i=document.createElement("img");i.src=p.avatar;$("pAv").insertBefore(i,$("pAv").querySelector(".cam"))}else im.src=p.avatar}
+  else{$("avEm").style.display="";if(im)im.remove()}}
+function rename(){const p=prof(),n=prompt("修改昵称：",p.name);if(n===null||!n.trim())return;p.name=n.trim().slice(0,20);SV("dm_pf",p);rPf();feed("修改昵称为「"+p.name+"」")}
+function edBio(){const p=prof(),n=prompt("修改简介：",p.bio);if(n===null)return;p.bio=n.trim().slice(0,120);SV("dm_pf",p);rPf();feed("更新了个人简介")}
+
+/* ===== 头像上传 + 1:1 裁剪 ===== */
+let crImg=null,crX=0,crY=0,crScale=1,crBase=1,dragging=false,dx=0,dy=0;
+const BOX=280;
+function chgAv(){$("avFile").click()}
+$("avFile").addEventListener("change",function(){
+  const f=this.files[0];this.value="";if(!f)return;
+  if(f.size>8e6){alert("图片请小于 8MB");return}
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      crImg=img;
+      // 初始缩放：让图片短边刚好铺满 1:1 裁剪框
+      crBase=BOX/Math.min(img.width,img.height);
+      crScale=1;crX=0;crY=0;
+      $("crZoom").value=100;
+      $("cropImg").src=e.target.result;
+      layoutCrop();
+      $("crMask").classList.add("show");
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+});
+function layoutCrop(){
+  const s=crBase*crScale;
+  const w=crImg.width*s,h=crImg.height*s;
+  const el=$("cropImg");
+  el.style.width=w+"px";el.style.height=h+"px";
+  el.style.left=(BOX/2-w/2+crX)+"px";
+  el.style.top=(BOX/2-h/2+crY)+"px";
+}
+// 缩放滑块
+$("crZoom").addEventListener("input",function(){crScale=this.value/100;clampCrop();layoutCrop()});
+// 拖动（鼠标 + 触摸）
+const box=$("cropBox");
+function pos(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY}}
+box.addEventListener("mousedown",e=>{dragging=true;const p=pos(e);dx=p.x-crX;dy=p.y-crY;e.preventDefault()});
+box.addEventListener("touchstart",e=>{dragging=true;const p=pos(e);dx=p.x-crX;dy=p.y-crY},{passive:true});
+window.addEventListener("mousemove",e=>{if(!dragging)return;const p=pos(e);crX=p.x-dx;crY=p.y-dy;clampCrop();layoutCrop()});
+window.addEventListener("touchmove",e=>{if(!dragging)return;const p=pos(e);crX=p.x-dx;crY=p.y-dy;clampCrop();layoutCrop()},{passive:true});
+window.addEventListener("mouseup",()=>dragging=false);
+window.addEventListener("touchend",()=>dragging=false);
+// 限制图片始终盖住整个裁剪框
+function clampCrop(){
+  const s=crBase*crScale,w=crImg.width*s,h=crImg.height*s;
+  crX=Math.min(w/2-BOX/2,Math.max(BOX/2-w/2,crX));
+  crY=Math.min(h/2-BOX/2,Math.max(BOX/2-h/2,crY));
+}
+// 确认：输出 256×256 正方形 JPEG
+function applyCrop(){
+  const S=256,c=document.createElement("canvas");c.width=c.height=S;
+  const ctx=c.getContext("2d");
+  const s=crBase*crScale;
+  const k=S/BOX; // 裁剪框到输出比例
+  const w=crImg.width*s*k,h=crImg.height*s*k;
+  ctx.drawImage(crImg,S/2-w/2+crX*k,S/2-h/2+crY*k,w,h);
+  const p=prof();p.avatar=c.toDataURL("image/jpeg",.85);
+  SV("dm_pf",p);rPf();feed("更换了头像");cm("crMask");
+}
+
+/* 作品 */
+const works=()=>LS("dm_works",[]);
+function publish(){
+  if(!curHtml){aMsg("还没有可发布的作品，先让我帮你造一个吧","a");return}
+  const a=prompt("输入创作者署名（明码展示）：",prof().name);if(a===null)return;
+  const w=works();w.unshift({id:Date.now(),title:curPrompt.slice(0,20)||"未命名梦境",desc:curPrompt,author:a||"匿名造梦师",price:"免费试玩",html:curHtml,time:new Date().toLocaleString()});
+  SV("dm_works",w);feed("发布了新作品「"+w[0].title+"」");clPrev();goPage("plaza");
+}
+const wHTML=w=>`<div class="card wc" onclick="loadW(${w.id})"><span class="wd" onclick="event.stopPropagation();delW(${w.id})">✕</span><h3>${esc(w.title)}</h3><p>${esc(w.desc)}</p><div class="wm"><span>✎ ${esc(w.author)} · ${w.time.slice(0,10)}</span><span class="tp">H5互动 · ${w.price}</span></div></div>`;
+const rHome=()=>{const w=works();$("homeGrid").innerHTML=w.length?w.slice(0,4).map(wHTML).join(""):'<div class="eb">还没有作品，点「＋」造一个吧</div>'};
+const rPlaza=()=>{const w=works();$("plazaGrid").innerHTML=w.length?w.map(wHTML).join(""):'<div class="eb">🌌 广场空空如也，快造出第一个梦境并发布吧</div>'};
+function loadW(id){const w=works().find(x=>x.id===id);if(!w)return;curHtml=w.html;curPrompt=w.desc;goPage("dream");opPrev()}
+function delW(id){SV("dm_works",works().filter(x=>x.id!==id));rPlaza();rHome();rMe()}
+
+/* 动态 */
+const feeds=()=>LS("dm_feed",[]);
+function feed(t){const f=feeds();f.unshift({t,time:new Date().toLocaleString()});SV("dm_feed",f.slice(0,50))}
+
+/* 我的页 */
+function rMe(){const w=works(),f=feeds();$("stW").textContent=w.length;$("stF").textContent=f.length;rPf();const b=$("meBody");
+  if(meT===0)b.innerHTML=w.length?w.map(x=>`<div class="card li" onclick="loadW(${x.id})"><div class="lic">🎮</div><div class="lm"><div class="tt">${esc(x.title)}</div><div class="dd">✎ ${esc(x.author)} · ${x.time.slice(0,10)}</div></div><div class="lr">${x.price} ›</div></div>`).join(""):'<div class="eb">还没有作品，点「＋」找造梦 AI 创作吧</div>';
+  else if(meT===1)b.innerHTML='<div class="eb">🛒 商品货架筹备中 · 所有上架作品将明码标价</div>';
+  else b.innerHTML=f.length?f.map(x=>`<div class="card li"><div class="lic">✦</div><div class="lm"><div class="tt">${esc(x.t)}</div><div class="dd">${x.time}</div></div></div>`).join(""):'<div class="eb">暂无动态</div>'}
+
+/* 主理人 */
+function openCfg(){if(admT){$("cfB").value=localStorage.getItem("dm_base")||"";$("cfM").value=localStorage.getItem("dm_model")||"";$("tRes").textContent="";$("cMask").classList.add("show");return}
+  $("aTk").value="";$("lRes").textContent="";$("lMask").classList.add("show");setTimeout(()=>$("aTk").focus(),100)}
+async function verAdm(){const t=$("aTk").value.trim();if(!t){$("lRes").textContent="请输入口令";return}$("lRes").textContent="验证中…";
+  try{const r=await fetch("/api/admin/verify",{method:"POST",headers:{"Content-Type":"application/json","x-admin-token":t}}),d=await r.json();
+    if(d.admin){admT=t;sessionStorage.setItem("dm_admin",t);cm("lMask");openCfg()}else $("lRes").textContent="❌ 口令错误，无权访问"}catch(e){$("lRes").textContent="❌ 无法连接后端"}}
+function saveCfg(){localStorage.setItem("dm_base",$("cfB").value.trim());localStorage.setItem("dm_model",$("cfM").value.trim());cm("cMask")}
+async function testCh(){$("tRes").textContent="⚡ 测试中…";
+  try{const r=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json","x-admin-token":admT},body:JSON.stringify({prompt:"回复OK两个字",baseUrl:$("cfB").value.trim()||undefined,model:$("cfM").value.trim()||undefined,modelId:"basic"})}),d=await r.json();
+    $("tRes").textContent=r.ok?("✅ 连通成功 · "+d.model):("❌ "+d.error)}catch(e){$("tRes").textContent="❌ "+e.message}}
+
+/* 启动 */
+$("cBody").innerHTML=WELCOME;
+rPf();setCr(getCr());rMT();chkSt();setInterval(chkSt,30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "dream-space-station",
+  "version": "2.0.0",
+  "description": "造梦空间站 - 源光工坊 H5 创作者平台",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
